@@ -2,17 +2,34 @@
 import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import axios from "axios";
 
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false); // State to toggle password visibility
+  const [showPassword, setShowPassword] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleSubmit = (e: any) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Handle form submission here (e.g., send a request to your backend)
-    console.log("Email:", email);
-    console.log("Password:", password);
+    setError(null); // Reset error state
+
+    try {
+      const response = await axios.post(`${process.env.NEXT_PUBLIC_URL}/auth/login`, { email, password });
+      
+      // if (response.data.token) {
+      //   // Save token in local storage
+      //   localStorage.setItem("token", response.data.token);
+
+      //   // Redirect or show success message
+      //   console.log("Login successful!");
+      //   window.location.href = "/dashboard"; // Redirect to dashboard
+      // } else {
+      //   setError("Unexpected response from server.");
+      // }
+    } catch (err: any) {
+      setError(err.response?.data?.error || "Login failed. Please try again.");
+    }
   };
 
   return (
@@ -45,13 +62,12 @@ export default function Login() {
               Password
             </label>
             <input
-              type={showPassword ? "text" : "password"} // Change input type based on visibility state
+              type={showPassword ? "text" : "password"}
               id="password"
               className="border text-black p-2 w-full rounded pr-10"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
             />
-            {/* Eye icon */}
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
@@ -60,6 +76,8 @@ export default function Login() {
               {showPassword ? "👁️" : "🙈"}
             </button>
           </div>
+
+          {error && <p className="text-red-500 text-sm mb-4">{error}</p>}
 
           <div className="flex justify-between mb-4">
             <div className="flex items-center">
@@ -85,7 +103,10 @@ export default function Login() {
             </button>
           </div>
           <p className="text-sm text-gray-500 mt-4">
-            Don't have an account? <Link href="/signup" className="text-blue-500 hover:underline">Sign Up</Link>
+            Don't have an account?{" "}
+            <Link href="/signup" className="text-blue-500 hover:underline">
+              Sign Up
+            </Link>
           </p>
         </form>
       </div>
@@ -93,7 +114,7 @@ export default function Login() {
       {/* Right side - Image */}
       <div className="w-1/2 flex items-center justify-center">
         <Image
-          src="/assets/login.png" // Replace with your image path
+          src="/assets/login.png"
           alt="Login Illustration"
           width={600}
           height={600}

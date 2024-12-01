@@ -2,7 +2,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-
+import axios from "axios";
 
 export default function Signup() {
   const [firstName, setFirstName] = useState("");
@@ -10,22 +10,64 @@ export default function Signup() {
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
 
-  const handleSubmit = (e: any) => {
+  // Handle form submission
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    console.log("First Name:", firstName);
-    console.log("Email:", email);
-    console.log("Phone:", phone);
-    console.log("Password:", password);
-    console.log("Confirm Password:", confirmPassword);
+    setErrorMessage("");
+    setSuccessMessage("");
+  
+    if (password !== confirmPassword) {
+      setErrorMessage("Passwords do not match.");
+      return;
+    }
+  
+    try {
+      const response = await axios.post(
+        `${process.env.NEXT_PUBLIC_URL}/auth/signup`,
+        {
+          firstName,
+          email,
+          phone,
+          password,
+        }
+      );
+  
+      if (response.status === 201) {
+        setSuccessMessage("Signup successful! You can now log in.");
+       
+        setFirstName("");
+        setEmail("");
+        setPhone("");
+        setPassword("");
+        setConfirmPassword("");
+      }
+    } catch (err) {
+      if (axios.isAxiosError(err)) {
+       
+        if (err.response && err.response.data && err.response.data.error) {
+          setErrorMessage(err.response.data.error);
+        } else {
+          setErrorMessage("An unexpected error occurred. Please try again.");
+        }
+      } else if (err instanceof Error) {
+        
+        setErrorMessage(err.message);
+      } else {
+        setErrorMessage("An unexpected error occurred.");
+      }
+    }
   };
+  
 
   return (
     <div className="bg-gray-200 min-h-screen flex items-center">
       {/* Left side - Image */}
       <div className="w-2/5 h-[80vh] flex justify-center items-center ml-12">
         <Image
-          src="/assets/signup.png" // Replace with your image path
+          src="/assets/signup.png"
           alt="Signup Illustration"
           width={600}
           height={600}
@@ -33,10 +75,8 @@ export default function Signup() {
         />
       </div>
 
-
       {/* Right side - Form container */}
       <div className="bg-grey-200 p-10 w-full max-w-md rounded-lg ml-auto relative ml-11">
-        {/* Signup text above the form */}
         <h2
           className="text-2xl font-bold inter mb-6 absolute left-4 -top-0"
           style={{ fontWeight: 300 }}
@@ -46,6 +86,14 @@ export default function Signup() {
         <p className="text-gray-700 mb-4">
           Let's get you all set up so you can access your personal account.
         </p>
+
+        {/* Error or success message */}
+        {errorMessage && (
+          <div className="text-red-500 mb-4 text-center">{errorMessage}</div>
+        )}
+        {successMessage && (
+          <div className="text-green-500 mb-4 text-center">{successMessage}</div>
+        )}
 
         <form onSubmit={handleSubmit}>
           <div className="mb-4">
