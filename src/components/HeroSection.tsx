@@ -1,12 +1,26 @@
 "use client";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import axios from "axios";
 import Image from "next/image";
 import { Toaster, toast } from "sonner";
-import { useRouter } from "next/navigation"; // Import useRouter
+import { useRoomStore } from "@/stores/roomStore";
 
-const HeroSection = () => {
-  const router = useRouter(); // Initialize router
+interface Classroom {
+  _id: string;
+  title: string;
+  description: string;
+  type: 'public' | 'private';
+  schedule: string;
+  createdAt: string;
+}
+
+interface HeroSectionProps {
+  classrooms: Classroom[];
+  setClassrooms: React.Dispatch<React.SetStateAction<Classroom[]>>;
+}
+const HeroSection: React.FC = () => {
+  const [classrooms, setClassrooms] = useState<Classroom[]>([]);
+  const { addRoom } = useRoomStore();
   const [formData, setFormData] = useState({
     title: "",
     description: "",
@@ -14,49 +28,25 @@ const HeroSection = () => {
     time: "",
     type: "public",
   });
-
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
-    setFormData((prevData) => ({ ...prevData, [name]: value }));
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
   };
-
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    // Validate form data
-    if (!formData.title || !formData.date || !formData.time) {
-      toast.error("Please fill in all required fields");
-      return;
-    }
 
     try {
-      const response = await axios.post(
-        `${process.env.NEXT_PUBLIC_URL}/classroom/createroom`, 
-        formData, 
-        { withCredentials: true }
-      );
-      
-      // Reset form after successful submission
-      setFormData({
-        title: "",
-        description: "",
-        date: "",
-        time: "",
-        type: "public",
-      });
-
-      // Show success toast
-      toast.success("Classroom created successfully!");
-
-      // Optionally, trigger a page refresh or update classrooms
-      router.refresh(); // This will trigger a soft refresh of the page
-
-    } catch (error: any) {
-      console.error(error);
-      toast.error(error.response?.data?.error || "Failed to create classroom");
+      const response = await axios.post(`${process.env.NEXT_PUBLIC_URL}/classroom/createroom`, formData);
+      addRoom(response.data); 
+    } catch (error) {
+      console.error('Error adding room:', error);
     }
   };
-
+  
+   
   return (
     <section className="relative bg-[#F8D252] w-full h-[75vh] flex items-start justify-start">
       {/* Main hero content container */}

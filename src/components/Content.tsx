@@ -1,7 +1,8 @@
 'use client'
 import React, { useState, useEffect, useRef } from 'react';
-import axios from 'axios';
 import { Toaster, toast } from 'sonner';
+import { useRoomStore } from '@/stores/roomStore';
+import axios from 'axios';
 
 interface Classroom {
   _id: string;
@@ -16,33 +17,23 @@ const Content: React.FC = () => {
   const [classrooms, setClassrooms] = useState<Classroom[]>([]);
   const [loading, setLoading] = useState(true);
   const scrollRef = useRef<HTMLDivElement>(null);
-
-  const fetchClassrooms = async () => {
-    try {
-      const response = await axios.get(`${process.env.NEXT_PUBLIC_URL}/classroom/public`); 
-      setClassrooms(response.data);
-      setLoading(false);
-    } catch (error) {
-      toast.error('Failed to fetch classrooms');
-      setLoading(false);
-    }
-  };
+  const { rooms, setRoom } = useRoomStore();
 
   useEffect(() => {
-    fetchClassrooms();
-
-  
-    const handleClassroomUpdate = () => {
-      fetchClassrooms();
+    const fetchRooms = async () => {
+      try {
+        setLoading(true);
+        const response = await axios.get(`${process.env.NEXT_PUBLIC_URL}/classroom/public`);
+        setRoom(response.data); 
+        setLoading(false);
+      } catch (error) {
+        toast.error('Error fetching rooms:');
+        setLoading(false);
+      }
     };
 
-    window.addEventListener('classroom-created', handleClassroomUpdate);
-
-    return () => {
-      window.removeEventListener('classroom-created', handleClassroomUpdate);
-    };
-  }, []);
-
+    fetchRooms();
+  }, [setRoom]);
 
   const scrollLeft = () => {
     if (scrollRef.current) {
@@ -69,8 +60,7 @@ const Content: React.FC = () => {
         <p>The new age education system welcomes you</p>
         <p>We deliver better results than other platforms</p>
       </div>
-        <Toaster />
-
+     
       <div className="relative mt-10">
        
         <div 
@@ -83,25 +73,25 @@ const Content: React.FC = () => {
     msOverflowStyle: 'none' 
   }}
         >
-          {classrooms.map((classroom) => (
+          {rooms.map((room) => (
             <div
-              key={classroom._id}
+              key={room._id}
               className="bg-white shadow-md rounded-lg border hover:shadow-lg transition-shadow w-80 flex-shrink-0"
             >
               <div className='bg-[#F19962] w-full h-10 shadow-md rounded-t-lg'></div>
-              <h2 className="text-xl font-semibold px-4 mt-2">{classroom.title}</h2>
-              <p className="text-gray-700 px-4 mt-2">{classroom.description}</p>
+              <h2 className="text-xl font-semibold px-4 mt-2">{room.title}</h2>
+              <p className="text-gray-700 px-4 mt-2">{room.description}</p>
               <div className="mt-4 px-4 pb-4">
                 <p className="text-sm text-gray-500">
-                  <span className="font-semibold">Type:</span> {classroom.type}
+                  <span className="font-semibold">Type:</span> {room.type}
                 </p>
                 <p className="text-sm text-gray-500">
                   <span className="font-semibold">Schedule:</span>{' '}
-                  {new Date(classroom.schedule).toLocaleString()}
+                  {new Date(room.schedule).toLocaleString()}
                 </p>
                 <p className="text-sm text-gray-500">
                   <span className="font-semibold">Created:</span>{' '}
-                  {new Date(classroom.createdAt).toLocaleString()}
+                  {new Date(room.createdAt).toLocaleString()}
                 </p>
               </div>
             </div>
