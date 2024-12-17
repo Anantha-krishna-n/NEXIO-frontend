@@ -4,6 +4,14 @@ import { Toaster, toast } from 'sonner';
 import { useRoomStore } from '@/stores/roomStore';
 import axios from 'axios';
 
+
+interface User {
+  _id: string;
+  name: string;
+  email: string;
+  profile?: string;
+}
+
 interface Classroom {
   _id: string;
   title: string;
@@ -11,6 +19,7 @@ interface Classroom {
   type: 'public' | 'private';
   schedule: string;
   createdAt: string;
+  admin: User;
 }
 
 const Content: React.FC = () => {
@@ -61,6 +70,7 @@ const Content: React.FC = () => {
         <p>We deliver better results than other platforms</p>
       </div>
      
+
       <div className="relative mt-10">
        
         <div 
@@ -92,6 +102,10 @@ const Content: React.FC = () => {
                 <p className="text-sm text-gray-500">
                   <span className="font-semibold">Created:</span>{' '}
                   {new Date(room.createdAt).toLocaleString()}
+                </p>
+                <p className="text-sm text-gray-500 mt-2">
+                  <span className="font-semibold">Created by:</span>{' '}
+                  {room.admin?.name || room.admin?.['name'] || 'Unknown'}
                 </p>
               </div>
             </div>

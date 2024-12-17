@@ -1,7 +1,15 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 
-// Define the Classroom interface
+
+
+export interface User {
+  _id: string;
+  name: string;
+  email: string;
+  profile?: string;
+}
+
 export interface Classroom {
   _id: string;
   title: string;
@@ -9,26 +17,27 @@ export interface Classroom {
   type: 'public' | 'private';
   schedule: string;
   createdAt: string;
+  admin: User;
 }
 
-// Define the RoomState interface for the Zustand store
+
 interface RoomState {
-  rooms: Classroom[]; // Array of Classroom
-  setRoom: (newRooms: Classroom[]) => void; // Overwrites the entire state
-  addRoom: (newRoom: Classroom) => void; // Adds a single room to the array
+  rooms: Classroom[];
+  setRoom: (newRooms: Classroom[]) => void; 
+  addRoom: (newRoom: Classroom) => void; 
 }
 
 export const useRoomStore = create<RoomState>()(
   persist(
     (set) => ({
-      rooms: [], // Initial state
-      setRoom: (newRooms) => set({ rooms: newRooms }), // Overwrite rooms
+      rooms: [], 
+      setRoom: (newRooms) => set({ rooms: newRooms }), 
       addRoom: (newRoom) =>
-        set((state) => ({ rooms: [...state.rooms, newRoom] })), // Add new room
+        set((state) => ({ rooms: [...state.rooms, newRoom] })), 
     }),
     {
-      name: 'room-storage', // Name of the storage key
-      storage: createJSONStorage(() => localStorage), // Use localStorage for persistence
+      name: 'room-storage', 
+      storage: createJSONStorage(() => localStorage), 
       onRehydrateStorage: (state) => {
         console.log('Hydration starts');
         return (state, error) => {

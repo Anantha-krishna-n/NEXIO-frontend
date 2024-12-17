@@ -4,6 +4,8 @@ import axios from "axios";
 import Image from "next/image";
 import { Toaster, toast } from "sonner";
 import { useRoomStore } from "@/stores/roomStore";
+import { useUserStore } from "@/stores/authStore";
+import { useRouter } from 'next/navigation';
 
 interface Classroom {
   _id: string;
@@ -28,6 +30,8 @@ const HeroSection: React.FC = () => {
     time: "",
     type: "public",
   });
+  const router = useRouter();
+  const { user } = useUserStore();
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
@@ -37,12 +41,30 @@ const HeroSection: React.FC = () => {
   };
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
+    if (!user) {
+      toast.error("Please log in to create a room");
+      setTimeout(()=>{
+        router.push('/login');
+      },1000)
+      return;
+    }
     try {
-      const response = await axios.post(`${process.env.NEXT_PUBLIC_URL}/classroom/createroom`, formData);
+      const response = await axios.post(`${process.env.NEXT_PUBLIC_URL}/classroom/createroom`, formData,{
+        withCredentials:true
+      });
       addRoom(response.data); 
+      toast.success("Room created successfully!");
+      setFormData({
+        title: "",
+        description: "",
+        date: "",
+        time: "",
+        type: "public",
+      });
     } catch (error) {
       console.error('Error adding room:', error);
+      toast.error("Failed to create the room. Please try again.");
+
     }
   };
   
