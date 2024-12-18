@@ -3,6 +3,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Toaster, toast } from 'sonner';
 import { useRoomStore } from '@/stores/roomStore';
 import axios from 'axios';
+import { useRouter } from 'next/navigation'
 
 
 interface User {
@@ -27,6 +28,7 @@ const Content: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const scrollRef = useRef<HTMLDivElement>(null);
   const { rooms, setRoom } = useRoomStore();
+  const router = useRouter();
 
   useEffect(() => {
     const fetchRooms = async () => {
@@ -63,6 +65,27 @@ const Content: React.FC = () => {
       </div>
     );
   }
+  const handleJoinClassroom = async (classroomId: string) => {
+    try {
+      const response = await axios.post(
+        `${process.env.NEXT_PUBLIC_URL}/classroom/joinClassroom/${classroomId}`, 
+        {}, 
+        { withCredentials: true }
+      );
+      router.push(`classroom/${classroomId}`)
+      toast.success('Joined classroom successfully');
+    } catch (error: any) {
+      
+      if (error.response) {
+        const errorMessage = error.response.data?.error || 'Unexpected error occurred';
+        toast.error(`Failed to join classroom: ${errorMessage}`);
+      } else if (error.request) {
+        toast.error('No response received from server. Please try again later.');
+      } else {
+        toast.error(`Error: ${error.message}`);
+      }
+    }
+  };
   return (
     <div className="p-4">
       <div className="text-2xl font-inter text-gray-500 text-center mt-10">
@@ -70,7 +93,6 @@ const Content: React.FC = () => {
         <p>We deliver better results than other platforms</p>
       </div>
      
-
       <div className="relative mt-10">
        
         <div 
@@ -87,7 +109,8 @@ const Content: React.FC = () => {
             <div
               key={room._id}
               className="bg-white shadow-md rounded-lg border hover:shadow-lg transition-shadow w-80 flex-shrink-0"
-            >
+              onClick={() => handleJoinClassroom(room._id)}
+                >
               <div className='bg-[#F19962] w-full h-10 shadow-md rounded-t-lg'></div>
               <h2 className="text-xl font-semibold px-4 mt-2">{room.title}</h2>
               <p className="text-gray-700 px-4 mt-2">{room.description}</p>
