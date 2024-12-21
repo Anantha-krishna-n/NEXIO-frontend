@@ -2,9 +2,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Toaster, toast } from 'sonner';
 import { useRoomStore } from '@/stores/roomStore';
-import axios from 'axios';
-import { useRouter } from 'next/navigation'
-
+import { useUserStore } from "@/stores/authStore";
+import { useRouter } from 'next/navigation';
+import axiosInstance from '@/app/utils/axiosInstance';
 
 interface User {
   _id: string;
@@ -26,16 +26,20 @@ interface Classroom {
 const Content: React.FC = () => {
   const [classrooms, setClassrooms] = useState<Classroom[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedClassroom, setSelectedClassroom] = useState<Classroom | null>(null);
+  const [showModal, setShowModal] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const { rooms, setRoom } = useRoomStore();
   const router = useRouter();
+  const { user } = useUserStore();
+  // const api=axiosInstance()
 
   useEffect(() => {
     const fetchRooms = async () => {
       try {
         setLoading(true);
-        const response = await axios.get(`${process.env.NEXT_PUBLIC_URL}/classroom/public`);
-        setRoom(response.data); 
+        const response = await axiosInstance.get('/classroom/public');
+        setRoom(response.data);
         setLoading(false);
       } catch (error) {
         toast.error('Error fetching rooms:');
@@ -58,24 +62,19 @@ const Content: React.FC = () => {
     }
   };
 
-  if (loading) {
-    return (
-      <div className="flex justify-center items-center h-screen">
-        loading
-      </div>
-    );
-  }
   const handleJoinClassroom = async (classroomId: string) => {
+    if (!user) {
+      toast.error("Please log in to join a room");
+      setTimeout(() => {
+        router.push('/login');
+      }, 1000);
+      return;
+    }
     try {
-      const response = await axios.post(
-        `${process.env.NEXT_PUBLIC_URL}/classroom/joinClassroom/${classroomId}`, 
-        {}, 
-        { withCredentials: true }
-      );
-      router.push(`classroom/${classroomId}`)
+      const response = await axiosInstance.post(`/classroom/joinClassroom/${classroomId}`);
+      router.push(`classroom/${classroomId}`);
       toast.success('Joined classroom successfully');
     } catch (error: any) {
-      
       if (error.response) {
         const errorMessage = error.response.data?.error || 'Unexpected error occurred';
         toast.error(`Failed to join classroom: ${errorMessage}`);
@@ -86,31 +85,49 @@ const Content: React.FC = () => {
       }
     }
   };
+
+  const openModal = (classroom: Classroom) => {
+    setSelectedClassroom(classroom);
+    setShowModal(true);
+  };
+
+  const closeModal = () => {
+    setShowModal(false);
+    setSelectedClassroom(null);
+  };
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-screen">
+        loading
+      </div>
+    );
+  }
+
   return (
     <div className="p-4">
-      <div className="text-2xl font-inter text-gray-500 text-center mt-10">
+      <div className="text-2xl font-inter text-gray-500 text-center mt-10 opacity-70">
         <p>The new age education system welcomes you</p>
         <p>We deliver better results than other platforms</p>
       </div>
-     
+
       <div className="relative mt-10">
-       
         <div 
           ref={scrollRef} 
           className="flex overflow-x-auto gap-4 scrollbar-hide"
-         style={{ 
-    overflowX: 'auto', 
-    overflowY: 'hidden', 
-    scrollbarWidth: 'none', 
-    msOverflowStyle: 'none' 
-  }}
+          style={{ 
+            overflowX: 'auto', 
+            overflowY: 'hidden', 
+            scrollbarWidth: 'none', 
+            msOverflowStyle: 'none' 
+          }}
         >
           {rooms.map((room) => (
             <div
               key={room._id}
               className="bg-white shadow-md rounded-lg border hover:shadow-lg transition-shadow w-80 flex-shrink-0"
-              onClick={() => handleJoinClassroom(room._id)}
-                >
+              onClick={() => openModal(room)}
+            >
               <div className='bg-[#F19962] w-full h-10 shadow-md rounded-t-lg'></div>
               <h2 className="text-xl font-semibold px-4 mt-2">{room.title}</h2>
               <p className="text-gray-700 px-4 mt-2">{room.description}</p>
@@ -135,7 +152,6 @@ const Content: React.FC = () => {
           ))}
         </div>
 
-      
         <button 
           onClick={scrollLeft} 
           className="absolute left-0 top-1/2 transform -translate-y-1/2 bg-gray-200 hover:bg-gray-300 text-gray-700 p-2 rounded-full shadow-md focus:outline-none"
@@ -149,6 +165,32 @@ const Content: React.FC = () => {
           &#8250;
         </button>
       </div>
+
+      {showModal && selectedClassroom && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+          <div className="bg-white p-6 rounded-md shadow-lg w-96">
+            <h2 className="text-xl font-semibold mb-4">Join Classroom</h2>
+            <p>Do you want to join the classroom "{selectedClassroom.title}"?</p>
+            <div className="flex justify-end gap-4 mt-6">
+              <button 
+                className="bg-gray-200 px-4 py-2 rounded-md hover:bg-gray-300" 
+                onClick={closeModal}
+              >
+                Cancel
+              </button>
+              <button 
+                className="bg-orange-400 text-white px-4 py-2 rounded-md hover:bg-orange-600" 
+                onClick={() => {
+                  handleJoinClassroom(selectedClassroom._id);
+                  closeModal();
+                }}
+              >
+                Yes
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

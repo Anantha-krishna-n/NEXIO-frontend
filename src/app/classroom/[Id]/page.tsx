@@ -19,7 +19,8 @@ const ClassroomPage: React.FC = () => {
         const response = await axios.get(`${process.env.NEXT_PUBLIC_URL}/classroom/${Id}`, {
           withCredentials: true,
         });
-        setClassroom(response.data);
+        console.log(response,"testing")
+        setClassroom(response.data.classroom);
         setLoading(false);
       } catch (error) {
         toast.error('Error fetching classroom details');
@@ -40,7 +41,7 @@ const ClassroomPage: React.FC = () => {
   }
 
   return (
-    <div className="container mx-auto p-4">
+    <div className="container mx-auto p-4 items-center">
       <h1 className="text-3xl font-bold mb-4">{classroom.title}</h1>
       <p className="text-gray-600 mb-2">{classroom.description}</p>
       <p className="text-sm text-gray-500">
