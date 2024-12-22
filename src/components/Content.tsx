@@ -32,7 +32,6 @@ const Content: React.FC = () => {
   const { rooms, setRoom } = useRoomStore();
   const router = useRouter();
   const { user } = useUserStore();
-  // const api=axiosInstance()
 
   useEffect(() => {
     const fetchRooms = async () => {
@@ -70,11 +69,18 @@ const Content: React.FC = () => {
       }, 1000);
       return;
     }
-    try {
-      const response = await axiosInstance.post(`/classroom/joinClassroom/${classroomId}`);
+    axiosInstance.post(`/classroom/joinClassroom/${classroomId}`)
+    .then((response) => {
+      console.log(response,"response")
+      if (response.status === 406) {
+        toast.error(response.data.message);
+        return; // Exit early if forbidden
+      }
       router.push(`classroom/${classroomId}`);
       toast.success('Joined classroom successfully');
-    } catch (error: any) {
+    })
+    .catch((error: any) => {
+      console.log(error, "error");
       if (error.response) {
         const errorMessage = error.response.data?.error || 'Unexpected error occurred';
         toast.error(`Failed to join classroom: ${errorMessage}`);
@@ -83,9 +89,10 @@ const Content: React.FC = () => {
       } else {
         toast.error(`Error: ${error.message}`);
       }
-    }
+    });  
   };
 
+  
   const openModal = (classroom: Classroom) => {
     setSelectedClassroom(classroom);
     setShowModal(true);

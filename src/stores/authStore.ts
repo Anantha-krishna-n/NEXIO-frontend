@@ -17,6 +17,7 @@ interface User {
   verified?: boolean;
   role: 'admin' | 'moderator' | 'participant';
   subscription?: Subscription;
+  isBlocked?: boolean;
 }
 
 interface AuthState {
@@ -34,7 +35,15 @@ export const useUserStore = create(
     (set) => ({
       user: null,
       accessToken: null,
-      setUser: (user) => set({ user }),
+      setUser: (user) => {
+        // Check if the user is blocked
+        if (user && user.isBlocked) {
+          console.warn('Access restricted: User is blocked.');
+          set({ user: null, accessToken: null }); // Clear user data if blocked
+          return;
+        }
+        set({ user });
+      },
       setAccessToken: (token) => set({ accessToken: token }),
       updateUser: (updates) =>
         set((state) => ({
@@ -60,6 +69,11 @@ export const useUserStore = create(
           if (error) {
             console.log('An error happened during hydration', error);
           } else {
+            // Check if the hydrated user is blocked
+            if (state?.user?.isBlocked) {
+              console.warn('Access restricted: User is blocked.');
+              state.clearAuth();
+            }
             console.log('Hydration finished');
           }
         };
@@ -67,4 +81,3 @@ export const useUserStore = create(
     }
   )
 );
-

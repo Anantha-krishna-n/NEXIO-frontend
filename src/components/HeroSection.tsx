@@ -1,11 +1,12 @@
 "use client";
 import React, { useEffect, useState } from "react";
-import axios from "axios";
 import Image from "next/image";
 import { Toaster, toast } from "sonner";
 import { useRoomStore } from "@/stores/roomStore";
 import { useUserStore } from "@/stores/authStore";
 import { useRouter } from 'next/navigation';
+import axiosInstance from '@/app/utils/axiosInstance';
+
 
 interface Classroom {
   _id: string;
@@ -49,8 +50,11 @@ const HeroSection: React.FC = () => {
       return;
     }
     try {
-      const response = await axios.post(`${process.env.NEXT_PUBLIC_URL}/classroom/createroom`, formData,{
-        withCredentials:true
+      console.log('Form Data:', formData);
+console.log('User:', user);
+
+      const response = await axiosInstance.post('/classroom/createroom', formData, {
+        withCredentials: true,
       });
       addRoom(response.data); 
       toast.success("Room created successfully!");
@@ -153,8 +157,9 @@ const HeroSection: React.FC = () => {
             {/* Create Button */}
             <button
               type="submit"
-              className="bg-[#F19962] text-white font-bold py-2 px-4 rounded hover:bg-[#e08e57] transition"
-            >
+              className="group bg-[#F19962] text-white font-bold py-2 px-4 rounded transition-colors duration-200 ease-in-out hover:bg-[#e08e57] focus:bg-[#e08e57] active:bg-[#e08e57]"
+              style={{ position: "relative", zIndex: 1 }}
+              >
               Create
             </button>
           </form>

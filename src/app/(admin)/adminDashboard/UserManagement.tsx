@@ -92,7 +92,7 @@ const UserManagement: React.FC = () => {
                 {new Date(user.createdAt).toString()}
               </td>
               <td className="py-2 px-4">
-                {!user.isBlocked ? "Blocked" : "Active"}
+                {user.isBlocked ? "Blocked" : "Active"}
               </td>
               <td className="py-2 px-4">
                 <button
@@ -102,8 +102,8 @@ const UserManagement: React.FC = () => {
                   disabled={loadingUserId === user._id}
                   className={`px-4 py-2 rounded-lg text-white ${
                     user.isBlocked
-                      ? "bg-red-500 hover:bg-red-600"
-                      : "bg-green-500 hover:bg-green-600"
+                      ? "bg-green-500 hover:bg-green-600"
+                      : "bg-red-500 hover:bg-red-600"
                   } ${
                     loadingUserId === user._id
                       ? "opacity-50 cursor-not-allowed"
@@ -112,7 +112,7 @@ const UserManagement: React.FC = () => {
                 >
                   {loadingUserId === user._id
                     ? "Loading..."
-                    : !user.isBlocked
+                    : user.isBlocked
                     ? "Unblock"
                     : "Block"}
                 </button>
@@ -140,42 +140,42 @@ const UserManagement: React.FC = () => {
       </div>
 
       {confirmationModal.show && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-          <div className="bg-white p-6 rounded-lg shadow-lg w-1/3">
-            <h3 className="text-lg font-semibold mb-4">
-              Confirm {confirmationModal.action === "block" ? "Block" : "Unblock"}
-            </h3>
-            <p className="mb-6">
-              Are you sure you want to{" "}
-              {confirmationModal.action === "block" ? "unblock" : "block"} this
-              user?
-            </p>
-            <div className="flex justify-end">
-              <button
-                onClick={closeModal}
-                className="px-4 py-2 bg-gray-300 rounded-lg mr-2"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={() =>
-                  toggleBlockStatus(
-                    confirmationModal.userId!,
-                    confirmationModal.action
-                  )
-                }
-                className={`px-4 py-2 rounded-lg text-white ${
-                  confirmationModal.action === "block"
-                  ? "bg-green-500 hover:bg-green-600"
-                  : "bg-red-500 hover:bg-red-600"
-                }`}
-              >
-                Confirm
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+  <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+    <div className="bg-white p-6 rounded-lg shadow-lg w-1/3">
+      <h3 className="text-lg font-semibold mb-4">
+        {confirmationModal.action === "block" ? "Confirm Block" : "Confirm Unblock"}
+      </h3>
+      <p className="mb-6">
+        Are you sure you want to{" "}
+        {confirmationModal.action === "block" ? "block" : "unblock"} this user?
+      </p>
+      <div className="flex justify-end">
+        <button
+          onClick={closeModal}
+          className="px-4 py-2 bg-gray-300 rounded-lg mr-2"
+        >
+          Cancel
+        </button>
+        <button
+          onClick={() =>
+            toggleBlockStatus(
+              confirmationModal.userId!,
+              confirmationModal.action
+            )
+          }
+          className={`px-4 py-2 rounded-lg text-white ${
+            confirmationModal.action === "block"
+              ? "bg-red-500 hover:bg-red-600"
+              : "bg-green-500 hover:bg-green-600"
+          }`}
+        >
+          {confirmationModal.action === "block" ? "Block" : "Unblock"}
+        </button>
+      </div>
+    </div>
+  </div>
+)}
+
       <Toaster />
     </div>
   );
