@@ -7,7 +7,6 @@ import { useUserStore } from "@/stores/authStore";
 import { useRouter } from 'next/navigation';
 import axiosInstance from '@/app/utils/axiosInstance';
 
-
 interface Classroom {
   _id: string;
   title: string;
@@ -21,6 +20,7 @@ interface HeroSectionProps {
   classrooms: Classroom[];
   setClassrooms: React.Dispatch<React.SetStateAction<Classroom[]>>;
 }
+
 const HeroSection: React.FC = () => {
   const [classrooms, setClassrooms] = useState<Classroom[]>([]);
   const { addRoom } = useRoomStore();
@@ -33,6 +33,7 @@ const HeroSection: React.FC = () => {
   });
   const router = useRouter();
   const { user } = useUserStore();
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
@@ -40,23 +41,40 @@ const HeroSection: React.FC = () => {
       [name]: value,
     }));
   };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) {
       toast.error("Please log in to create a room");
-      setTimeout(()=>{
+      setTimeout(() => {
         router.push('/login');
-      },1000)
+      }, 1000);
       return;
     }
+
+    // Front-end validation
+    const { title, description, date, time } = formData;
+    const selectedDateTime = new Date(`${date}T${time}`);
+    const currentDate = new Date();
+
+    if (!title || !description || !date || !time) {
+      toast.error("All fields are required.");
+      return;
+    }
+
+    if (selectedDateTime < currentDate) {
+      toast.error("Please select a future date and time.");
+      return;
+    }
+
     try {
       console.log('Form Data:', formData);
-console.log('User:', user);
+      console.log('User:', user);
 
       const response = await axiosInstance.post('/classroom/createroom', formData, {
         withCredentials: true,
       });
-      addRoom(response.data); 
+      addRoom(response.data);
       toast.success("Room created successfully!");
       setFormData({
         title: "",
@@ -68,11 +86,9 @@ console.log('User:', user);
     } catch (error) {
       console.error('Error adding room:', error);
       toast.error("Failed to create the room. Please try again.");
-
     }
   };
-  
-   
+
   return (
     <section className="relative bg-[#F8D252] w-full h-[75vh] flex items-start justify-start">
       {/* Main hero content container */}
@@ -84,7 +100,7 @@ console.log('User:', user);
           </h1>
           <h1 className="text-4xl font-inter font-bold">create & inspire</h1>
         </div>
-        <Toaster position="top-right"/>
+        <Toaster position="top-right" />
 
         {/* Form container */}
         <div className="absolute bg-white p-6 rounded-lg shadow-lg flex flex-col items-center w-full max-w-xs mt-12">
@@ -159,7 +175,7 @@ console.log('User:', user);
               type="submit"
               className="group bg-[#F19962] text-white font-bold py-2 px-4 rounded transition-colors duration-200 ease-in-out hover:bg-[#e08e57] focus:bg-[#e08e57] active:bg-[#e08e57]"
               style={{ position: "relative", zIndex: 1 }}
-              >
+            >
               Create
             </button>
           </form>

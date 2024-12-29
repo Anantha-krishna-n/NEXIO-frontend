@@ -94,6 +94,12 @@ export default function Signup() {
     }
   }, [password]);
 
+  const SignInWithGoogle = () => {
+    // Open the Google sign-in endpoint
+    window.open(`${process.env.NEXT_PUBLIC_URL}/auth/google`, "_self");
+  };
+
+
   // Handle form submission
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -323,7 +329,7 @@ export default function Signup() {
             <button 
               type="button"
               className="bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold py-2 px-4 rounded w-full"
-            >
+           onClick={SignInWithGoogle} >
               Signup with Google
             </button>
           </div>

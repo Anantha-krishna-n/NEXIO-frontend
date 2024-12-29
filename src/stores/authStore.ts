@@ -13,7 +13,7 @@ interface User {
   _id: string;
   name: string;
   email: string;
-  profile?: string;
+  profilepic?: string;
   verified?: boolean;
   role: 'admin' | 'moderator' | 'participant';
   subscription?: Subscription;
@@ -29,12 +29,12 @@ interface AuthState {
   clearAuth: () => void;
   logout: () => Promise<void>;
 }
-
 export const useUserStore = create(
   persist<AuthState>(
     (set) => ({
       user: null,
       accessToken: null,
+
       setUser: (user) => {
         // Check if the user is blocked
         if (user && user.isBlocked) {

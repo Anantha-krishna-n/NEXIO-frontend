@@ -16,13 +16,18 @@ export default function Login() {
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
   const { setUser, setAccessToken, user } = useUserStore();
-
   useEffect(() => {
     // Check if user is already logged in
     if (user) {
       router.push("/");
     }
   }, [user, router]);
+
+
+  const SignInWithGoogle = () => {
+    window.open(`${process.env.NEXT_PUBLIC_URL}/auth/google`, "_self");
+  };
+
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -136,9 +141,12 @@ export default function Login() {
           >
             {isLoading ? 'Logging in...' : 'Login'}
           </button>
-
           <div className="mt-4 text-center">
-            <button type="button" className="bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold py-2 px-4 rounded w-full">
+          <button
+              type="button"
+              className="bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold py-2 px-4 rounded w-full"
+              onClick={SignInWithGoogle}
+            >
               Login with Google
             </button>
           </div>

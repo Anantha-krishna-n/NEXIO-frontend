@@ -4,7 +4,8 @@ import Link from "next/link";
 import Image from "next/image";
 import { useUserStore } from "@/stores/authStore";
 import { useRouter } from 'next/navigation';
-
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Bell, LogOut, Settings, User } from 'lucide-react'
 
 const Header = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -19,6 +20,8 @@ const Header = () => {
 
   useEffect(() => {
     setMounted(true);
+
+    
   }, []);
 
   const toggleModal = () => setIsModalOpen(!isModalOpen);
@@ -41,8 +44,9 @@ const Header = () => {
   };
 
   if(!mounted) {
-    return null; // or a loading placeholder
+    return null; 
   }
+
 
   return (
     <header className="bg-[#42454e] p-4 fixed top-0 left-0 w-full z-50 shadow-lg">
@@ -95,54 +99,55 @@ const Header = () => {
                 onClick={toggleProfileModal}
                 className="flex items-center space-x-3 focus:outline-none"
               >
-                <Image
-                  src={user.profile || "/assets/profile.jpg"}
-                  alt="Profile"
-                  width={30}
-                  height={30}
-                  className="rounded-full cursor-pointer"
-                />
+                <Avatar className="h-8 w-8">
+                  <AvatarImage src={user.profilepic || "/assets/profile.jpg"} alt="Profile" />
+                  <AvatarFallback>{user.name?.charAt(0)}</AvatarFallback>
+                </Avatar>
                 <span className="text-gray-200 font-medium">{user.name}</span>
               </button>
 
               {/* Profile Modal */}
               {isProfileModalOpen && (
-                <div className="absolute right-0 top-full mt-2 bg-white border rounded shadow-lg w-80 z-50 p-6">
-                  <div className="flex justify-between items-center mb-4">
-                    <button 
-                      onClick={toggleProfileModal} 
-                      className="text-gray-600 hover:text-gray-800 font-bold absolute top-2 right-2"
-                    >
-                      X
-                    </button>
+                <div className="absolute right-0 top-full mt-2 bg-white border rounded shadow-lg w-61 z-50">
+                  <div className="flex items-center space-x-3 p-2">
+                    <Avatar className="h-10 w-10">
+                      <AvatarImage src={user.profilepic || "/assets/profile.jpg"} alt="Profile" />
+                      <AvatarFallback>{user.name?.charAt(0)}</AvatarFallback>
+                    </Avatar>
+                    <div className="text-left">
+                      <p className="text-sm font-medium">{user.name}</p>
+                      <p className="text-xs text-muted-foreground">{user.email}</p>
+                    </div>
                   </div>
-
-                  <div className="flex flex-col items-start space-y-4">
-                    <Image 
-                      src={user.profile || "/assets/profile.jpg"} 
-                      alt="User Profile" 
-                      width={50} 
-                      height={50} 
-                      className="rounded-full"
-                    />
-                    <div className="w-full">
-                      <div className="mb-2">
-                        <p className="text-sm text-gray-600">name:</p>
-                        <h3 className="text-lg font-bold">{user.name}</h3>
-                      </div>
-                      <div>
-                        <p className="text-sm text-gray-600">email:</p>
-                        <p className="text-sm">{user.email}</p>
+                  <div className="border-t border-gray-200">
+                    <button className="w-full text-left px-4 py-2 hover:bg-gray-100 flex items-center">
+                      <User className="mr-2 h-4 w-4 text-purple-500" />
+                      <span>My Profile</span>
+                    </button>
+                    <button className="w-full text-left px-4 py-2 hover:bg-gray-100 flex items-center">
+                      <Settings className="mr-2 h-4 w-4 text-purple-500" />
+                      <span>Settings</span>
+                    </button>
+                    <div className="relative">
+                      <button className="w-full text-left px-4 py-2 hover:bg-gray-100 flex items-center">
+                        <Bell className="mr-2 h-4 w-4 text-purple-500" />
+                        <span>Notification</span>
+                      </button>
+                      <div className="absolute left-full top-0 bg-white border rounded shadow-lg hidden group-hover:block">
+                        <button className="w-full text-left px-4 py-2 hover:bg-gray-100">Allow</button>
+                        <button className="w-full text-left px-4 py-2 hover:bg-gray-100">Mute</button>
                       </div>
                     </div>
                   </div>
-
-                  <button 
-                    onClick={handleLogout} 
-                    className="mt-6 w-full bg-red-500 text-white py-2 px-4 rounded hover:bg-red-600 transition"
-                  >
-                    Logout
-                  </button>
+                  <div className="border-t border-gray-200">
+                    <button 
+                      onClick={handleLogout}
+                      className="w-full text-left px-4 py-2 hover:bg-gray-100 flex items-center text-red-500"
+                    >
+                      <LogOut className="mr-2 h-4 w-4" />
+                      <span>Log Out</span>
+                    </button>
+                  </div>
                 </div>
               )}
             </li>
