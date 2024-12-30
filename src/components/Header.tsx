@@ -55,7 +55,6 @@ const Header = () => {
         <div className="flex items-center">
           <img src="/path/to/your/logo.png" alt="Logo" className="h-8" />
         </div>
-
         {/* Center Navigation Links */}
         <ul className="flex space-x-4">
           <li>
@@ -120,8 +119,13 @@ const Header = () => {
                     </div>
                   </div>
                   <div className="border-t border-gray-200">
-                    <button className="w-full text-left px-4 py-2 hover:bg-gray-100 flex items-center">
-                      <User className="mr-2 h-4 w-4 text-purple-500" />
+                  <button
+                      onClick={() => {
+                        setIsProfileModalOpen(false); // Close the modal
+                        router.push("/profile"); // Navigate to the profile page
+                      }}
+                      className="w-full text-left px-4 py-2 hover:bg-gray-100 flex items-center"
+                    >                      <User className="mr-2 h-4 w-4 text-purple-500" />
                       <span>My Profile</span>
                     </button>
                     <button className="w-full text-left px-4 py-2 hover:bg-gray-100 flex items-center">
