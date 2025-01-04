@@ -74,6 +74,7 @@ const HeroSection: React.FC = () => {
       const response = await axiosInstance.post('/classroom/createroom', formData, {
         withCredentials: true,
       });
+      if(response.data.type !== 'private')
       addRoom(response.data);
       toast.success("Room created successfully!");
       setFormData({

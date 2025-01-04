@@ -38,6 +38,7 @@ const Content: React.FC = () => {
       try {
         setLoading(true);
         const response = await axiosInstance.get('/classroom/public');
+        // const publicRooms = response.data.filter((room: Classroom) => room.type === 'public');
         setRoom(response.data);
         setLoading(false);
       } catch (error) {
@@ -45,9 +46,10 @@ const Content: React.FC = () => {
         setLoading(false);
       }
     };
-
+  
     fetchRooms();
   }, [setRoom]);
+  
 
   const scrollLeft = () => {
     if (scrollRef.current) {
@@ -74,7 +76,7 @@ const Content: React.FC = () => {
       console.log(response,"response")
       if (response.status === 406) {
         toast.error(response.data.message);
-        return; // Exit early if forbidden
+        return; 
       }
       router.push(`classroom/${classroomId}`);
       toast.success('Joined classroom successfully');

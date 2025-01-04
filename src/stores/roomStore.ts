@@ -13,6 +13,7 @@ export interface Classroom {
   title: string;
   description: string;
   type: 'public' | 'private';
+  inviteLink:string;
   schedule: string;
   createdAt: string;
   admin: User;

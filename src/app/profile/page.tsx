@@ -1,7 +1,7 @@
 // import Header from "@/components/Header";
 import Header from "@/components/Header";
 import { SideBar } from "@/components/Sidebar";
-import { ProfileForm } from "@/components/Profileform";
+import ProfileForm from "@/components/Profileform";
 
 export default function Profile() {
     return (

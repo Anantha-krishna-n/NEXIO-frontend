@@ -45,9 +45,9 @@ export const useUserStore = create(
         set({ user });
       },
       setAccessToken: (token) => set({ accessToken: token }),
-      updateUser: (updates) =>
+      updateUser: (userData) =>
         set((state) => ({
-          user: state.user ? { ...state.user, ...updates } : null,
+          user: state.user ? { ...state.user, ...userData } : null,
         })),
       clearAuth: () => set({ user: null, accessToken: null }),
       logout: async () => {

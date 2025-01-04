@@ -20,10 +20,8 @@ const Header = () => {
 
   useEffect(() => {
     setMounted(true);
-
     
   }, []);
-
   const toggleModal = () => setIsModalOpen(!isModalOpen);
   const toggleProfileModal = () => setIsProfileModalOpen(!isProfileModalOpen);
 
@@ -49,8 +47,8 @@ const Header = () => {
 
 
   return (
-    <header className="bg-[#42454e] p-4 fixed top-0 left-0 w-full z-50 shadow-lg">
-      <nav className="flex justify-between items-center max-w-7xl mx-auto">
+<header className="bg-[#42454e] p-4 fixed top-0 left-0 w-full z-50 shadow-lg" style={{ boxShadow: '0px 4px 10px rgba(241, 153, 98, 0.5)' }}>
+<nav className="flex justify-between items-center max-w-7xl mx-auto">
         {/* Logo Section */}
         <div className="flex items-center">
           <img src="/path/to/your/logo.png" alt="Logo" className="h-8" />
@@ -110,6 +108,7 @@ const Header = () => {
                 <div className="absolute right-0 top-full mt-2 bg-white border rounded shadow-lg w-61 z-50">
                   <div className="flex items-center space-x-3 p-2">
                     <Avatar className="h-10 w-10">
+   
                       <AvatarImage src={user.profilepic || "/assets/profile.jpg"} alt="Profile" />
                       <AvatarFallback>{user.name?.charAt(0)}</AvatarFallback>
                     </Avatar>
@@ -121,11 +120,12 @@ const Header = () => {
                   <div className="border-t border-gray-200">
                   <button
                       onClick={() => {
-                        setIsProfileModalOpen(false); // Close the modal
-                        router.push("/profile"); // Navigate to the profile page
+                        setIsProfileModalOpen(false); 
+                        router.push("/profile"); 
                       }}
                       className="w-full text-left px-4 py-2 hover:bg-gray-100 flex items-center"
                     >                      <User className="mr-2 h-4 w-4 text-purple-500" />
+
                       <span>My Profile</span>
                     </button>
                     <button className="w-full text-left px-4 py-2 hover:bg-gray-100 flex items-center">
@@ -157,7 +157,7 @@ const Header = () => {
             </li>
           )}
         </ul>
-      </nav>
+      </nav>  
 
       {/* Join a Class Modal */}
       {isModalOpen && (
