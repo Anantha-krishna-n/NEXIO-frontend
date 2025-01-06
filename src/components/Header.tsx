@@ -6,6 +6,8 @@ import { useUserStore } from "@/stores/authStore";
 import { useRouter } from 'next/navigation';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Bell, LogOut, Settings, User } from 'lucide-react'
+import axiosInstance from "@/app/utils/axiosInstance";
+import { toast } from "sonner";
 
 const Header = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -35,16 +37,40 @@ const Header = () => {
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Room Code:", roomCode);
-    setIsModalOpen(false);
+  
+    try {
+      const response = await axiosInstance.post(
+        `/classroom/join/invite/${roomCode}`,
+        {}, 
+      
+      );
+
+      console.log("Successfully joined the class:", response.data);
+     let classroomId=response.data.classroom._id
+     alert("working")
+      router.push(`/classroom/${classroomId}`);
+
+      toast.success("You have successfully joined the class!");
+      setRoomCode(""); 
+      setIsModalOpen(false); 
+    }  catch (error: any) {
+      if (error.status) {
+        console.error("Error:", error.message);
+        alert(`Error: ${error.message}`);
+      } else {
+        console.error("Unexpected error occurred:", error);
+        alert("An unexpected error occurred. Please try again.");
+      }
+    }
   };
+  
+  
 
   if(!mounted) {
     return null; 
   }
-
 
   return (
 <header className="bg-[#42454e] p-4 fixed top-0 left-0 w-full z-50 shadow-lg" style={{ boxShadow: '0px 4px 10px rgba(241, 153, 98, 0.5)' }}>
