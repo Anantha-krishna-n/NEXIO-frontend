@@ -6,10 +6,12 @@ import SubscriptionManagement from "./SubscriptionManagement";
 import { useAdminStore } from "@/stores/adminStore";
 // import withAdminAuth from "@/hoc/withAdminAuth"; // Import the HOC
 import withAdminAuth from "@/components/HOCs/withAdminAuth";
-
+import { useRouter } from "next/navigation";
 
 const AdminDashboard: React.FC = () => {
   const [activeSection, setActiveSection] = React.useState("dashboard");
+  const logout = useAdminStore((state) => state.logout);
+  const router=useRouter();
 
   const renderContent = () => {
     switch (activeSection) {
@@ -25,16 +27,16 @@ const AdminDashboard: React.FC = () => {
         return <div>Select a section from the sidebar</div>;
     }
   };
-
+  const handleLogout = async () => {
+    await logout();
+    router.push("/admin-login");
+  };
   return (
     <div className="flex flex-col min-h-screen bg-gray-100">
       <header className="w-full bg-white shadow-md py-4 px-6 flex justify-between items-center">
         <div className="text-xl font-bold text-gray-800">Admin Panel</div>
         <button
-          onClick={() => {
-            localStorage.removeItem("adminToken");
-            window.location.href = "/admin-login";
-          }}
+          onClick={handleLogout} 
           className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg"
         >
           Logout

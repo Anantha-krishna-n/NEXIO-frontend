@@ -39,33 +39,39 @@ const Header = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!roomCode.trim()) {
+      toast.error("Room code cannot be empty!");
+      return;
+    }
   
     try {
       const response = await axiosInstance.post(
-        `/classroom/join/invite/${roomCode}`,
-        {}, 
-      
+        `/classroom/join/invite/${roomCode}`
       );
-
-      console.log("Successfully joined the class:", response.data);
-     let classroomId=response.data.classroom._id
-     alert("working")
-      router.push(`/classroom/${classroomId}`);
-
+  
+      const classroomId = response.data.classroom._id;
       toast.success("You have successfully joined the class!");
-      setRoomCode(""); 
-      setIsModalOpen(false); 
-    }  catch (error: any) {
-      if (error.status) {
-        console.error("Error:", error.message);
-        alert(`Error: ${error.message}`);
+  
+      setTimeout(() => {
+        router.push(`/classroom/${classroomId}`);
+      }, 1000);
+  
+      setRoomCode("");
+      setIsModalOpen(false);
+    } catch (error: any) {
+      if (error.response) {
+        const { status, data } = error.response;
+        if (status === 404) {
+          toast.error(data.error || "Invalid invite code.");
+        } else {
+          toast.error(data.error || "An error occurred. Please try again.");
+        }
       } else {
-        console.error("Unexpected error occurred:", error);
-        alert("An unexpected error occurred. Please try again.");
+        toast.error("Network error or unexpected issue occurred.");
       }
     }
   };
-  
+    
   
 
   if(!mounted) {

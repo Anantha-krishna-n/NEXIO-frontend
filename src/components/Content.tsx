@@ -133,7 +133,7 @@ const Content: React.FC = () => {
         >
           {rooms.map((room) => (
             <div
-              key={room._id}
+            key={room._id || Math.random()}
               className="bg-white shadow-md rounded-lg border hover:shadow-lg transition-shadow w-80 flex-shrink-0"
               onClick={() => openModal(room)}
             >

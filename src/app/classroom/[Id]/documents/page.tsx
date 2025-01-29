@@ -13,7 +13,7 @@ export default function DocumentsPage() {
         </Button>
       </div>
       <div className="space-y-4">
-        {['Lesson Plan.pdf', 'Homework Assignment.docx', 'Project Guidelines.pptx'].map((doc, index) => (
+        {/* {['Lesson Plan.pdf', 'Homework Assignment.docx', 'Project Guidelines.pptx'].map((doc, index) => (
           <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-md">
             <div className="flex items-center">
               <FileText className="mr-2 h-5 w-5 text-blue-500" />
@@ -23,7 +23,7 @@ export default function DocumentsPage() {
               <Share2 className="h-4 w-4" />
             </Button>
           </div>
-        ))}
+        ))} */}
       </div>
     </div>
   )

@@ -3,10 +3,11 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import axios from "axios";
 import { useUserStore } from "@/stores/authStore";
 import { Toaster, toast } from "sonner";
+import { axiosHelper } from "@/app/utils/axiosHelper";
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -16,12 +17,40 @@ export default function Login() {
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
   const { setUser, setAccessToken, user } = useUserStore();
+  const searchParams = useSearchParams();
+
+
+  const returnUrl = searchParams?.get('returnUrl');
+  const urlParts = returnUrl?.split('/');
+  const classroomId = urlParts?.[urlParts.length - 1];
+  const roomCode = urlParts?.[urlParts.length - 2];
+console.log(classroomId,"classroomId")
+console.log(roomCode,"roomCode")
   useEffect(() => {
-    // Check if user is already logged in
     if (user) {
+      if (returnUrl && roomCode && classroomId) {
+        handleInviteRedirect();
+      } else {
+        router.push("/");
+      }
+    }
+  }, [user, router, returnUrl, roomCode, classroomId]);
+
+
+  const handleInviteRedirect = async () => {
+    try {
+      await axiosHelper({
+        method: "POST",
+        url: `/classroom/join/invite/${roomCode}`,
+      });
+      
+      router.push(`/classroom/${classroomId}`);
+    } catch (err) {
+      toast.error("Failed to join classroom. Invalid or expired invite link.");
       router.push("/");
     }
-  }, [user, router]);
+  };
+
 
 
   const SignInWithGoogle = () => {
@@ -31,49 +60,51 @@ export default function Login() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError(null);
     setIsLoading(true);
-    axios.defaults.withCredentials = true;
-    try {
-      const response = await axios.post(
-        `${process.env.NEXT_PUBLIC_URL}/auth/login`,
-        { email, password }
-      );
 
-      if (response.data.success) {
-        toast.success("Login Sucessfully..")
-        setUser(response.data.user);
-        setAccessToken(response.data.tokens.accessToken);
-        localStorage.removeItem("registeredEmail");
-        router.push("/");
-      } else {
-        setError("Unexpected response from server. Please try again.");
-      }
+    try {
+      const response = await axiosHelper({
+        method: "POST",
+        url: "/auth/login", 
+        data: { email, password },
+      });
+      const responseData = response as any;
+
+      toast.success("Login Successful!");
+      setUser(responseData.user);
+      setAccessToken(responseData.tokens.accessToken);
+      localStorage.removeItem("registeredEmail");
+      router.push("/");
     } catch (err: any) {
-      if (axios.isAxiosError(err)) {
-        if (err.response) {
-          if (err.response.status === 500) {
-            setError("Server error. Please try again later or contact support.");
-          } else if (err.response.status === 401) {
-            setError("Invalid email or password. Please try again.");
-          } else {
-            setError(err.response.data.error || "Login failed. Please try again.");
-          }
-        } else if (err.request) {
-          setError("No response from server. Please check your internet connection and try again.");
+
+
+      if (err.response && err.response.data) {
+        const status = err.response.status;
+        const message = err.response.data.error || "An error occurred";
+  
+        if (status === 400) {
+          setError("Email and password are required.");
+        } else if (status === 401) {
+          setError("Invalid credentials. Please check your email and password.");
+          return ;
+        } else if (status === 403) {
+          setError("Your account is blocked. Contact support for assistance.");
+          return ;
         } else {
-          setError("An error occurred while setting up the request. Please try again.");
+          setError(message);
         }
       } else {
-        setError("An unexpected error occurred. Please try again.");
+        setError("Network error! Please try again later.");
+        return ;
       }
     } finally {
       setIsLoading(false);
     }
   };
-
   return (
     <div className="bg-gray-200 min-h-screen flex">
+
+
       <div className="flex flex-col items-center justify-center w-full md:w-1/2 p-10 mt-16">
         <h1 className="text-3xl font-bold mb-7">Login</h1>
         <p className="text-gray-700 mb-4">Login to access your classroom account</p>
@@ -129,7 +160,7 @@ export default function Login() {
                 Remember me
               </label>
             </div>
-            <Link href="/forgot-password" className="text-red-500 hover:underline">
+            <Link href={`/finduser?email=${encodeURIComponent(email)}`} className="text-red-500 hover:underline">
               Forgot password
             </Link>
           </div>

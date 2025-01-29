@@ -5,21 +5,26 @@ import { useUserStore } from "@/stores/authStore";
 import axiosInstance from "@/app/utils/axiosInstance";
 
 export default function ProfileForm() {
+  const user = useUserStore((state) => state.user);
+
   const [activeTab, setActiveTab] = useState("personal");
   const [isNameEditable, setIsNameEditable] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const [originalName, setOriginalName] = useState("");
   const [editedName, setEditedName] = useState("");
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string>(user?.profilepic || '');
   const [privateRooms, setPrivateRooms] = useState([]);
   const [loadingPrivateRooms, setLoadingPrivateRooms] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
 const [totalClassrooms, setTotalClassrooms] = useState(0);
+const [classroomCounts, setClassroomCounts] = useState({ publicCount: 0, privateCount: 0 });
 const classroomsPerPage = 10;
 
-  const user = useUserStore((state) => state.user);
   const updateUser = useUserStore((state) => state.updateUser);
   const accessToken = useUserStore((state) => state.accessToken);
+  console.log("This is accesstoken",accessToken)
   const fetchPrivateRooms = async (page = 1) => {
     setLoadingPrivateRooms(true);
     try {
@@ -37,8 +42,24 @@ const classroomsPerPage = 10;
       setLoadingPrivateRooms(false);
     }
   };
+//   useEffect(() => {
+//     const fetchClassroomCounts = async () => {
+//       try {
+//         console.log("ponond")
+//         const response = await axiosInstance.get(
+//           `${process.env.NEXT_PUBLIC_URL}/classroom/count`)
   
-  // Call the fetch function whenever `currentPage` changes
+        
+// console.log("hehe")
+//         setClassroomCounts(response.data.count);
+//       } catch (err) {
+//         console.error("Error fetching classroom counts:", err);
+//       }
+//     };
+
+//     fetchClassroomCounts();
+//   }, [accessToken]);
+  
   useEffect(() => {
     if (activeTab === "private") {
       fetchPrivateRooms(currentPage);
@@ -58,13 +79,28 @@ const classroomsPerPage = 10;
     setError("");
     setEditedName(originalName);
   };
-
+  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      setSelectedFile(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setPreviewUrl(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
   const handleConfirm = async () => {
+    const formData = new FormData();
+      if (selectedFile) {
+        formData.append('profilepic', selectedFile)
+      }
     if (isNameEditable) {
       if (!editedName.trim()) {
         setError("Name cannot be empty.");
         return;
       }
+      
 
       setIsLoading(true);
       setError("");
@@ -99,8 +135,12 @@ const classroomsPerPage = 10;
 
   const handleEnterClassroom = async (classroomId: string) => {
     try {
+      const response= await axiosInstance.post(`/classroom/joinClassroom/${classroomId}`)
+     if(response.data){
+       window.location.href = `/classroom/${classroomId}`;
+
+     }
       // Redirect to the classroom details page
-      window.location.href = `/classroom/${classroomId}`;
     } catch (err) {
       console.error("Error navigating to the classroom:", err);
     }
@@ -114,6 +154,7 @@ const classroomsPerPage = 10;
         <div className="p-6">
           <h1 className="text-2xl font-medium mb-2">Profile</h1>
           <p className="text-gray-500">Add your personal information</p>
+    
         </div>
         <div className="px-6">
           <nav className="flex">

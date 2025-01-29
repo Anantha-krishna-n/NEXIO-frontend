@@ -14,6 +14,7 @@ export interface Classroom {
   description: string;
   type: 'public' | 'private';
   inviteLink:string;
+  inviteCode:string;
   schedule: string;
   createdAt: string;
   admin: User;
