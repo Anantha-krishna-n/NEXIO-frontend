@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import axiosInstance from "@/app/utils/axiosInstance"
 import { Toaster, toast } from 'sonner';
+import Lottie from "lottie-react";
 
 
 interface InviteModalProps {

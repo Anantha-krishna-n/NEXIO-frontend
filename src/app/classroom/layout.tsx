@@ -8,6 +8,7 @@ import { Classroom } from "@/stores/roomStore";
 import axiosInstance from "../utils/axiosInstance";
 import { useParams } from "next/navigation";
 import { useUserStore } from "@/stores/authStore";
+import { io,Socket } from "socket.io-client";
 
 interface ClassroomLayoutProps {
   children: React.ReactNode;
@@ -43,14 +44,14 @@ const ClassroomLayout = ({ children, classroomId }: ClassroomLayoutProps) => {
   }
 
   return (
-    <div className="h-screen flex flex-col bg-gray-100 py-20">
+    <div className="h-screen flex flex-col bg-gray-100 py-16">
     <Header />
     <div className="flex h-full bg-gray-100">
 
       <div className="flex-shrink-0">
         <Classbar />
       </div>
-      <main className="flex-1 p-6 overflow-hidden">
+      <main className="flex-1 p-6 h overflow-hidden">
         <div className="max-w-4xl ml-2">
           {error ? (
             <div className="text-red-500">{error}</div>

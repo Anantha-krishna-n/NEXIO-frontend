@@ -16,14 +16,14 @@ export default function Classbar() {
   const menuItems = [
     { icon: Home, label: "Home", href: `/classroom/${classroomId}` },
     { icon: FileText, label: "Documents", href: `/classroom/${classroomId}/documents` },
-    { icon: MessageSquare, label: "Group Chat", href: `/classroom/${classroomId}/group-chat` },
+    { icon: MessageSquare, label: "Group Chat", href: `/classroom/${classroomId}/chat` },
     { icon: Video, label: "Video Call", href: `/classroom/${classroomId}/video` },
     { icon: Square, label: "Whiteboard", href: `/classroom/${classroomId}/whiteboard` },
     { icon: Users, label: "Members", href: `/classroom/${classroomId}/members` },
   ];
 
   const SidebarContent = () => (
-    <div className="w-60 h-screen bg-white border-r flex flex-col relative z-20">
+    <div className="w-60 h-[calc(139vh-24rem)] bg-white border-r flex flex-col relative z-20">
       {menuItems.map((item) => (
         <Link
           key={item.href}

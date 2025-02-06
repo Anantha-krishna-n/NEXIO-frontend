@@ -84,12 +84,12 @@ const UserManagement: React.FC = () => {
           </tr>
         </thead>
         <tbody>
-          {users.map((user) => (
+         {users.map((user) => (
             <tr key={user._id} className="border-b">
               <td className="py-2 px-4">{user.name}</td>
               <td className="py-2 px-4">{user.email}</td>
               <td className="py-2 px-4">
-                {new Date(user.createdAt).toString()}
+                {new Date(user.createdAt).toLocaleDateString('en-GB')}
               </td>
               <td className="py-2 px-4">
                 {user.isBlocked ? "Blocked" : "Active"}
