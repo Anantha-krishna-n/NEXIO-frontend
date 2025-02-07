@@ -22,6 +22,7 @@ const ClassroomLayout = ({ children, classroomId }: ClassroomLayoutProps) => {
   const [error, setError] = useState<string | null>(null);
   const [isInviteModalOpen, setIsInviteModalOpen] = useState(false)
   const inviteButtonRef = useRef<HTMLButtonElement>(null)
+  const [socket, setSocket] = useState<Socket | null>(null);
 
   useEffect(() => {
     const fetchClassroom = async () => {
@@ -39,6 +40,26 @@ const ClassroomLayout = ({ children, classroomId }: ClassroomLayoutProps) => {
 
     fetchClassroom();
   }, [Id]);
+
+  useEffect(() => {
+    if (!Id) return;
+
+    const socketInstance = io(process.env.NEXT_PUBLIC_URL!, {
+      withCredentials: true,
+    });
+    setSocket(socketInstance);
+
+    socketInstance.on("connect", () => {
+      console.log("Connected to socket server:", socketInstance.id);
+      socketInstance.emit("joinClassroom", Id); // Join the classroom using the Id
+    });
+
+    return () => {
+      socketInstance.disconnect(); // Disconnect the socket when the component unmounts
+    };
+  }, [Id]);
+
+
  const toggleInviteModal = () => {
     setIsInviteModalOpen(!isInviteModalOpen)
   }
@@ -80,6 +101,7 @@ const ClassroomLayout = ({ children, classroomId }: ClassroomLayoutProps) => {
                 )}
               </div>
               {children}
+              {React.cloneElement(children as React.ReactElement, { socket })}
             </>
           )}
         </div>
