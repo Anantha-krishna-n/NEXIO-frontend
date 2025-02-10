@@ -10,6 +10,7 @@ import { useParams } from "next/navigation";
 import { useUserStore } from "@/stores/authStore";
 import { io,Socket } from "socket.io-client";
 
+
 interface ClassroomLayoutProps {
   children: React.ReactNode;
   classroomId: string;
@@ -22,7 +23,11 @@ const ClassroomLayout = ({ children, classroomId }: ClassroomLayoutProps) => {
   const [error, setError] = useState<string | null>(null);
   const [isInviteModalOpen, setIsInviteModalOpen] = useState(false)
   const inviteButtonRef = useRef<HTMLButtonElement>(null)
-  const [socket, setSocket] = useState<Socket | null>(null);
+
+
+  
+;
+
 
   useEffect(() => {
     const fetchClassroom = async () => {
@@ -31,7 +36,6 @@ const ClassroomLayout = ({ children, classroomId }: ClassroomLayoutProps) => {
           `${process.env.NEXT_PUBLIC_URL}/classroom/${Id}`
         );
         setClassroom(response.data.classroom);
-        console.log(response,"classroom")
       } catch (error) {
         console.error("Failed to fetch classroom:", error);
         setError("Failed to load classroom data.");
@@ -40,26 +44,6 @@ const ClassroomLayout = ({ children, classroomId }: ClassroomLayoutProps) => {
 
     fetchClassroom();
   }, [Id]);
-
-  useEffect(() => {
-    if (!Id) return;
-
-    const socketInstance = io(process.env.NEXT_PUBLIC_URL!, {
-      withCredentials: true,
-    });
-    setSocket(socketInstance);
-
-    socketInstance.on("connect", () => {
-      console.log("Connected to socket server:", socketInstance.id);
-      socketInstance.emit("joinClassroom", Id); // Join the classroom using the Id
-    });
-
-    return () => {
-      socketInstance.disconnect(); // Disconnect the socket when the component unmounts
-    };
-  }, [Id]);
-
-
  const toggleInviteModal = () => {
     setIsInviteModalOpen(!isInviteModalOpen)
   }
@@ -101,7 +85,6 @@ const ClassroomLayout = ({ children, classroomId }: ClassroomLayoutProps) => {
                 )}
               </div>
               {children}
-              {React.cloneElement(children as React.ReactElement, { socket })}
             </>
           )}
         </div>

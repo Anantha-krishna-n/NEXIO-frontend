@@ -23,9 +23,9 @@ export default function WhiteboardPage() {
     });
     setSocket(socketInstance);
 
-    socketInstance.on("connect", () => {
-      socketInstance.emit("joinClassroom", classroomId);
-    });
+    // socketInstance.on("connect", () => {
+    //   socketInstance.emit("joinClassroom", classroomId);
+    // });
 
     const loadInitialData = async () => {
       try {
