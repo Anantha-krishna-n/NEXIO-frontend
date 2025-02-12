@@ -1,6 +1,6 @@
 'use client';
 import { useEffect, useState, useRef } from 'react';
-import { useParams } from 'next/navigation';
+import { useParams,usePathname  } from 'next/navigation';
 import axiosInstance from '@/app/utils/axiosInstance';
 import { useUserStore } from '@/stores/authStore';
 import useSocketStore from '@/stores/socketStore';
@@ -20,6 +20,7 @@ interface Message {
 export default function ChatPage() {
   const params = useParams();
   const classroomId = params.Id as string;
+  const pathname = usePathname();
 
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState('');
@@ -28,10 +29,6 @@ export default function ChatPage() {
 
   const { user } = useUserStore();
   const { socket, connect } = useSocketStore();
-
-  useEffect(() => {
-    connect(); 
-  }, [connect]);
 
   useEffect(() => {
     if (!classroomId || !socket) return;
@@ -45,7 +42,7 @@ export default function ChatPage() {
         const isDuplicate = prev.some((msg) => msg._id === message._id);
         return isDuplicate ? prev : [...prev, message];
       });
-    };
+    };  
 
     socket.on('receiveMessage', handleMessage);
 
@@ -75,6 +72,9 @@ export default function ChatPage() {
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
+
+
+
 
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();

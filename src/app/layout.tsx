@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import localFont from "next/font/local";
 import {Inter} from 'next/font/google'
 import "./globals.css";
+import { EdgeStoreProvider } from "@/lib/edgestore";
 
 const inter_init=Inter({
   subsets:['latin'],
@@ -35,7 +36,7 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} ${inter_init.variable}  antialiased`}
       >
-        {children}
+         <EdgeStoreProvider>{children}</EdgeStoreProvider>
       </body>
     </html>
   ); 

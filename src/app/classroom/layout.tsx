@@ -9,6 +9,7 @@ import axiosInstance from "../utils/axiosInstance";
 import { useParams } from "next/navigation";
 import { useUserStore } from "@/stores/authStore";
 import { io,Socket } from "socket.io-client";
+import useSocketStore from "@/stores/socketStore";
 
 
 interface ClassroomLayoutProps {
@@ -23,11 +24,11 @@ const ClassroomLayout = ({ children, classroomId }: ClassroomLayoutProps) => {
   const [error, setError] = useState<string | null>(null);
   const [isInviteModalOpen, setIsInviteModalOpen] = useState(false)
   const inviteButtonRef = useRef<HTMLButtonElement>(null)
+  const {connect,socket}=useSocketStore();
 
-
-  
-;
-
+  useEffect(() => {
+    connect(); 
+  }, [socket,connect]);
 
   useEffect(() => {
     const fetchClassroom = async () => {
@@ -66,6 +67,7 @@ const ClassroomLayout = ({ children, classroomId }: ClassroomLayoutProps) => {
                 <div>
                   <h1 className="text-2xl font-semibold mb-1">{classroom?.title || "Loading..."}</h1>
                   <p className="text-sm text-gray-500">Created By: {classroom?.admin?.name || "Unknown"}</p>
+                  
                 </div>
                 {classroom?.type === "private" && classroom?.admin?.email===user?.email && (
                   <div className="relative">
