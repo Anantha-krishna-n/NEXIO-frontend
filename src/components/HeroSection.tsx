@@ -4,14 +4,15 @@ import Image from "next/image";
 import { Toaster, toast } from "sonner";
 import { useRoomStore } from "@/stores/roomStore";
 import { useUserStore } from "@/stores/authStore";
-import { useRouter } from 'next/navigation';
-import axiosInstance from '@/app/utils/axiosInstance';
+import { useRouter } from "next/navigation";
+import axiosInstance from "@/app/utils/axiosInstance";
+import { SubscriptionModal } from "./SubscriptionModal";
 
 interface Classroom {
   _id: string;
   title: string;
   description: string;
-  type: 'public' | 'private';
+  type: "public" | "private";
   schedule: string;
   createdAt: string;
 }
@@ -24,6 +25,8 @@ interface HeroSectionProps {
 const HeroSection: React.FC = () => {
   const [classrooms, setClassrooms] = useState<Classroom[]>([]);
   const { addRoom } = useRoomStore();
+  const [isSubscriptionModalOpen, setIsSubscriptionModalOpen] =
+    useState<boolean>(false);
   const [formData, setFormData] = useState({
     title: "",
     description: "",
@@ -34,7 +37,9 @@ const HeroSection: React.FC = () => {
   const router = useRouter();
   const { user } = useUserStore();
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
@@ -47,7 +52,7 @@ const HeroSection: React.FC = () => {
     if (!user) {
       toast.error("Please log in to create a room");
       setTimeout(() => {
-        router.push('/login');
+        router.push("/login");
       }, 1000);
       return;
     }
@@ -68,14 +73,33 @@ const HeroSection: React.FC = () => {
     }
 
     try {
-      console.log('Form Data:', formData);
-      console.log('User:', user);
+      console.log("Form Data:", formData);
+      console.log("User:", user);
+      if (
+        user?.subscription?.plan === "Free" &&
+        user?.publicClassroomCount > 2 &&
+        user?.privateClassroomCount > 2
+      ) {
+        setIsSubscriptionModalOpen(true);
+        return;
+      }
 
-      const response = await axiosInstance.post('/classroom/createroom', formData, {
-        withCredentials: true,
-      });
-      if(response.data.type !== 'private')
-      addRoom(response.data);
+      const response = await axiosInstance.post(
+        "/classroom/createroom",
+        formData,
+        {
+          withCredentials: true,
+        }
+      );
+
+      if (response.data.status === false) {
+        setIsSubscriptionModalOpen(true);
+        toast.error(response.data.errorMsg || "Could not create classroom");
+        return;
+      }
+
+      if (response.data.type !== "private") addRoom(response.data);
+
       toast.success("Room created successfully!");
       setFormData({
         title: "",
@@ -85,8 +109,8 @@ const HeroSection: React.FC = () => {
         type: "public",
       });
     } catch (error) {
-      console.error('Error adding room:', error);
-      toast.error("Failed to create the room. Please try again.");
+      console.error("Error adding room:", error);
+      // toast.error("Failed to create the room. Please try again.");
     }
   };
 
@@ -194,6 +218,10 @@ const HeroSection: React.FC = () => {
           priority
         />
       </div>
+      <SubscriptionModal
+        isOpen={isSubscriptionModalOpen}
+        onClose={() => setIsSubscriptionModalOpen(false)}
+      />
     </section>
   );
 };

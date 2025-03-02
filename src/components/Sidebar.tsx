@@ -17,10 +17,10 @@ export function SideBar() {
           Notifications
         </Link>
         <Link href="#" className="block text-gray-600 hover:text-gray-900">
-          Wallet
+          {/* Wallet */}
         </Link>
         <Link href="#" className="block text-gray-600 hover:text-gray-900">
-          Result
+          {/* Result */}
         </Link>
       </nav>
       <div className="mt-12">

@@ -18,6 +18,8 @@ interface User {
   role: 'admin' | 'moderator' | 'participant';
   subscription?: Subscription;
   isBlocked?: boolean;
+  privateClassroomCount:number;
+  publicClassroomCount:number;
 }
 
 interface AuthState {

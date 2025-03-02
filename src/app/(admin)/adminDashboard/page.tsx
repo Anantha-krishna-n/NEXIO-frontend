@@ -65,9 +65,9 @@ const AdminDashboard: React.FC = () => {
                     : "hover:bg-gray-200"
                 }`}
               >
-                User Management
+                User
               </li>
-              <li
+              {/* <li
                 onClick={() => setActiveSection("classroomManagement")}
                 className={`cursor-pointer p-2 mb-2 rounded-lg ${
                   activeSection === "classroomManagement"
@@ -76,7 +76,7 @@ const AdminDashboard: React.FC = () => {
                 }`}
               >
                 Classroom Management
-              </li>
+              </li> */}
               <li
                 onClick={() => setActiveSection("subscriptionManagement")}
                 className={`cursor-pointer p-2 mb-2 rounded-lg ${
@@ -85,7 +85,7 @@ const AdminDashboard: React.FC = () => {
                     : "hover:bg-gray-200"
                 }`}
               >
-                Subscription Management
+                Subscriptions
               </li>
             </ul>
           </nav>

@@ -40,7 +40,7 @@ const ClassroomPage: React.FC = () => {
     return <div className="flex justify-center items-center h-screen">Classroom not found</div>;
   }
   return (
-    <div className="flex h-screen bg-gray-100">
+    <div className="flex min-h-96 bg-gray-100">
      
       <main className="flex-1 p-6 overflow-auto">
         <div className="max-w-4xl mx-auto">

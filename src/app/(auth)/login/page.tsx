@@ -8,6 +8,7 @@ import axios from "axios";
 import { useUserStore } from "@/stores/authStore";
 import { Toaster, toast } from "sonner";
 import { axiosHelper } from "@/app/utils/axiosHelper";
+import { loginUser } from "@/app/service/userService";
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -63,20 +64,14 @@ console.log(roomCode,"roomCode")
     setIsLoading(true);
 
     try {
-      const response = await axiosHelper({
-        method: "POST",
-        url: "/auth/login", 
-        data: { email, password },
-      });
+      const response = await loginUser(email, password); 
       const responseData = response as any;
-
       toast.success("Login Successful!");
       setUser(responseData.user);
       setAccessToken(responseData.tokens.accessToken);
       localStorage.removeItem("registeredEmail");
       router.push("/");
     } catch (err: any) {
-
 
       if (err.response && err.response.data) {
         const status = err.response.status;

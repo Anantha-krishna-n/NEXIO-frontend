@@ -5,6 +5,8 @@ import { useRouter, useSearchParams } from "next/navigation"
 import { Toaster, toast } from "sonner"
 import { axiosHelper } from "@/app/utils/axiosHelper"
 import Link from "next/link"
+import { resetPassword } from "@/app/service/userService"
+
 
 export default function ResetPassword() {
   const [newPassword, setNewPassword] = useState("")
@@ -29,11 +31,7 @@ export default function ResetPassword() {
 
     try {
       setIsLoading(true)
-      const response = await axiosHelper({
-        method: "POST",
-        url: "/auth/reset-password",
-        data: { email, otp, newPassword, confirmPassword },
-      })
+      const response = await resetPassword({ email, otp, newPassword, confirmPassword })
 
       if (response) {
         toast.success("Password reset successful! Redirecting to login")

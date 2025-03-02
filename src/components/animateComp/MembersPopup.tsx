@@ -53,10 +53,10 @@ const MembersPopup: React.FC<MembersPopupProps> = ({ onClose, roomId }) => {
   return (
     <motion.div
       initial={{ x: "-100%" }}
-      animate={{ x: 0 }}
+      animate={{ x: 100 }}
       exit={{ x: "-100%" }}
       transition={{ type: "spring", stiffness: 300, damping: 30 }}
-      className="absolute bottom-[21.6rem] left-60 w-80 h-auto bg-gray-300 shadow-lg z-10"
+      className="absolute bottom-[-21.6rem] left-40  w-80 h-auto bg-gray-300 shadow-lg z-10"
     >
       <div className="p-4">
         <div className="flex justify-between items-center mb-4">

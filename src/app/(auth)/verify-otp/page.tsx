@@ -4,8 +4,10 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import { useRouter } from "next/navigation";
 import { Toaster, toast } from "sonner";
+import { verifyOtp, resendOtp } from "@/app/service/userService";
 
-const OTP_VALIDITY_DURATION = 5 * 60; // 5 minutes in seconds
+
+const OTP_VALIDITY_DURATION = 5 * 60; 
 
 export default function VerifyOtp() {
   const [otp, setOtp] = useState("");
@@ -37,11 +39,11 @@ export default function VerifyOtp() {
 
     try {
       setIsLoading(true);
-      const response = await axios.post(
-        `${process.env.NEXT_PUBLIC_URL}/auth/verify`,
-        { email, otp }
-      );
-
+      // const response = await axios.post(
+      //   `${process.env.NEXT_PUBLIC_URL}/auth/verify`,
+      //   { email, otp }
+      // );
+const response=  await verifyOtp(email, otp);
       if (response.status === 200) {
         toast.success("Verification successful! Redirecting to login ");
         setTimeout(() => {
@@ -75,11 +77,11 @@ export default function VerifyOtp() {
 
     try {
       setIsLoading(true);
-      const response = await axios.post(
-        `${process.env.NEXT_PUBLIC_URL}/auth/resend-otp`,
-        { email }
-      );
-
+      // const response = await axios.post(
+      //   `${process.env.NEXT_PUBLIC_URL}/auth/resend-otp`,
+      //   { email }
+      // );
+      const response=await await resendOtp(email);
       if (response.status === 200) {
         toast.success("New OTP sent successfully");
         setTimeRemaining(OTP_VALIDITY_DURATION);
