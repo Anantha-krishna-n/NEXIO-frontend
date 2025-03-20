@@ -1,5 +1,6 @@
-import React, { useEffect, useState } from "react";
-import axiosInstance from "@/app/utils/axiosInstance";
+import React, { useEffect, useState, useCallback, useRef } from "react";
+import { fetchUsers, toggleBlockStatus } from "@/app/service/adminService";
+import ReusableTable from "@/components/ReusableTable";
 import { Toaster, toast } from "sonner";
 
 interface User {
@@ -20,30 +21,31 @@ const UserManagement: React.FC = () => {
     userId: string | null;
     action: "block" | "unblock";
   }>({ show: false, userId: null, action: "block" });
+  const hasFetched = useRef(false);
 
-  const fetchUsers = async (page: number = 1) => {
+  const loadUsers = useCallback(async (page: number) => {
     try {
-      const response = await axiosInstance.get(
-        `/admin/userManagement?page=${page}&limit=10`
-      );
-      setUsers(response.data.users);
-      setTotalPages(response.data.totalPages);
-      setCurrentPage(response.data.currentPage);
+        const data = await fetchUsers(page);
+        setUsers(data.users);
+        setTotalPages(data.totalPages);
+        setCurrentPage(data.currentPage);
     } catch (error) {
-      toast.error("Failed to fetch users");
+        toast.error("Failed to fetch users");
     }
-  };
+}, []);
 
-  const toggleBlockStatus = async (userId: string, action: "block" | "unblock") => {
+useEffect(() => {
+  console.log("Fetching users for page:", currentPage);
+  loadUsers(currentPage);
+}, [currentPage, loadUsers]); 
+ 
+
+  const handleToggleBlock = async (userId: string, action: "block" | "unblock") => {
     try {
       setLoadingUserId(userId);
-      const currentUser = users.find((user) => user._id === userId);
-      const response = await axiosInstance.put(
-        `/admin/users/${userId}/toggle-block`,
-        { isBlocked: action === "block" }
-      );
-      toast.success(response.data.message);
-      fetchUsers(currentPage);
+      const response = await toggleBlockStatus(userId, action);
+      toast.success(response.message);
+      loadUsers(currentPage);
     } catch (error) {
       toast.error("Failed to update user status");
     } finally {
@@ -60,10 +62,6 @@ const UserManagement: React.FC = () => {
     setConfirmationModal({ show: false, userId: null, action: "block" });
   };
 
-  useEffect(() => {
-    fetchUsers(currentPage);
-  }, [currentPage]);
-
   const handlePageChange = (page: number) => {
     if (page > 0 && page <= totalPages) {
       setCurrentPage(page);
@@ -73,54 +71,25 @@ const UserManagement: React.FC = () => {
   return (
     <div>
       <h2 className="text-2xl font-bold mb-4">User Management</h2>
-      <table className="w-full bg-white rounded-lg shadow-md">
-        <thead>
-          <tr className="border-b">
-            <th className="py-2 px-4 text-left">Username</th>
-            <th className="py-2 px-4 text-left">Email</th>
-            <th className="py-2 px-4 text-left">Created At</th>
-            <th className="py-2 px-4 text-left">Status</th>
-            <th className="py-2 px-4 text-left">Action</th>
-          </tr>
-        </thead>
-        <tbody>
-         {users.map((user) => (
-            <tr key={user._id} className="border-b">
-              <td className="py-2 px-4">{user.name}</td>
-              <td className="py-2 px-4">{user.email}</td>
-              <td className="py-2 px-4">
-                {new Date(user.createdAt).toLocaleDateString('en-GB')}
-              </td>
-              <td className="py-2 px-4">
-                {user.isBlocked ? "Blocked" : "Active"}
-              </td>
-              <td className="py-2 px-4">
-                <button
-                  onClick={() =>
-                    openModal(user._id, user.isBlocked ? "unblock" : "block")
-                  }
-                  disabled={loadingUserId === user._id}
-                  className={`px-4 py-2 rounded-lg text-white ${
-                    user.isBlocked
-                      ? "bg-green-500 hover:bg-green-600"
-                      : "bg-red-500 hover:bg-red-600"
-                  } ${
-                    loadingUserId === user._id
-                      ? "opacity-50 cursor-not-allowed"
-                      : ""
-                  }`}
-                >
-                  {loadingUserId === user._id
-                    ? "Loading..."
-                    : user.isBlocked
-                    ? "Unblock"
-                    : "Block"}
-                </button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+      
+      <ReusableTable
+        columns={[
+          { label: "Username", key: "name" },
+          { label: "Email", key: "email" },
+          { label: "Created At", key: "createdAt", render: (value) => new Date(value).toLocaleDateString("en-GB") },
+          { label: "Status", key: "isBlocked", render: (value) => (value ? "Blocked" : "Active") },
+        ]}
+        data={users}
+        actions={[
+          {
+            label: (user) => (user.isBlocked ? "Unblock" : "Block"),
+            onClick: (user) => openModal(user._id, user.isBlocked ? "unblock" : "block"),
+            className: (user) => 
+              `px-4 py-2 rounded-lg text-white ${user.isBlocked ? "bg-green-500 hover:bg-green-600" : "bg-red-500 hover:bg-red-600"}`
+          }
+        ]}
+      />
+
       <div className="flex justify-center mt-4">
         <button
           onClick={() => handlePageChange(currentPage - 1)}
@@ -140,41 +109,33 @@ const UserManagement: React.FC = () => {
       </div>
 
       {confirmationModal.show && (
-  <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-    <div className="bg-white p-6 rounded-lg shadow-lg w-1/3">
-      <h3 className="text-lg font-semibold mb-4">
-        {confirmationModal.action === "block" ? "Confirm Block" : "Confirm Unblock"}
-      </h3>
-      <p className="mb-6">
-        Are you sure you want to{" "}
-        {confirmationModal.action === "block" ? "block" : "unblock"} this user?
-      </p>
-      <div className="flex justify-end">
-        <button
-          onClick={closeModal}
-          className="px-4 py-2 bg-gray-300 rounded-lg mr-2"
-        >
-          Cancel
-        </button>
-        <button
-          onClick={() =>
-            toggleBlockStatus(
-              confirmationModal.userId!,
-              confirmationModal.action
-            )
-          }
-          className={`px-4 py-2 rounded-lg text-white ${
-            confirmationModal.action === "block"
-              ? "bg-red-500 hover:bg-red-600"
-              : "bg-green-500 hover:bg-green-600"
-          }`}
-        >
-          {confirmationModal.action === "block" ? "Block" : "Unblock"}
-        </button>
-      </div>
-    </div>
-  </div>
-)}
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+          <div className="bg-white p-6 rounded-lg shadow-lg w-1/3">
+            <h3 className="text-lg font-semibold mb-4">
+              {confirmationModal.action === "block" ? "Confirm Block" : "Confirm Unblock"}
+            </h3>
+            <p className="mb-6">
+              Are you sure you want to{" "}
+              {confirmationModal.action === "block" ? "block" : "unblock"} this user?
+            </p>
+            <div className="flex justify-end">
+              <button onClick={closeModal} className="px-4 py-2 bg-gray-300 rounded-lg mr-2">
+                Cancel
+              </button>
+              <button
+                onClick={() => handleToggleBlock(confirmationModal.userId!, confirmationModal.action)}
+                className={`px-4 py-2 rounded-lg text-white ${
+                  confirmationModal.action === "block"
+                    ? "bg-red-500 hover:bg-red-600"
+                    : "bg-green-500 hover:bg-green-600"
+                }`}
+              >
+                {confirmationModal.action === "block" ? "Block" : "Unblock"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <Toaster />
     </div>

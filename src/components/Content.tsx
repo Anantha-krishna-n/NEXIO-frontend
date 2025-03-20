@@ -5,6 +5,8 @@ import { useRoomStore } from '@/stores/roomStore';
 import { useUserStore } from "@/stores/authStore";
 import { useRouter } from 'next/navigation';
 import axiosInstance from '@/app/utils/axiosInstance';
+import { fetchPublicClassrooms, joinClassroom } from "@/app/service/classroomService";
+
 
 interface User {
   _id: string;
@@ -37,7 +39,7 @@ const Content: React.FC = () => {
     const fetchRooms = async () => {
       try {
         setLoading(true);
-        const response = await axiosInstance.get('/classroom/public');
+        const response = await fetchPublicClassrooms();
         // const publicRooms = response.data.filter((room: Classroom) => room.type === 'public');
         setRoom(response.data);
         setLoading(false);

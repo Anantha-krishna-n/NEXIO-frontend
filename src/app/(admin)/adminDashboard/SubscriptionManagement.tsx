@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import axiosInstance from "@/app/utils/axiosInstance";
 import { Pencil, Trash } from "lucide-react"; // Import icons from lucide-react
 
@@ -25,8 +25,8 @@ const SubscriptionManagement = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingSubscription, setEditingSubscription] =
     useState<Subscription | null>(null);
+    const hasFetched = useRef(false);
 
-  // Fetch all subscriptions
   useEffect(() => {
     const fetchSubscriptions = async () => {
       try {
@@ -38,7 +38,6 @@ const SubscriptionManagement = () => {
     fetchSubscriptions();
   }, []);
 
-  // Open modal for creating a new subscription
   const openModal = () => {
     setIsModalOpen(true);
   };

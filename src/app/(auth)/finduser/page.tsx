@@ -5,6 +5,8 @@ import { useSearchParams } from "next/navigation"
 import { axiosHelper } from "@/app/utils/axiosHelper"
 import { Toaster, toast } from "sonner"
 import { useRouter } from "next/navigation"
+import { sendPasswordResetOtp } from "@/app/service/userService";
+
 
 
 export default function FindUser() {
@@ -25,14 +27,12 @@ export default function FindUser() {
     setIsLoading(true)
 
     try {
-      await axiosHelper({
-        method: "POST",
-        url: "/auth/forgot-password",
-        data: { email },
-      })
+      const success = await sendPasswordResetOtp(email);
+      if (success) {
+        toast.success("Password reset otp sent to your email!")
+        router.push(`/otp-verify?email=${encodeURIComponent(email)}`);
+      }
 
-      toast.success("Password reset otp sent to your email!")
-      router.push(`/otp-verify?email=${encodeURIComponent(email)}`);
     } catch (error) {
       toast.error("Failed to send reset link. Please try again.")
     } finally {

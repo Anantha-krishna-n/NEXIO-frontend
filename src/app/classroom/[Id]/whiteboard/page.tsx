@@ -1,124 +1,147 @@
-"use client"
+"use client";
 
-import { useEffect, useState, useRef, useCallback } from "react"
-import { useParams } from "next/navigation"
-import axiosInstance from "@/app/utils/axiosInstance"
-import { useUserStore } from "@/stores/authStore"
-import { Tldraw, TldrawEditor, useEditor } from "@tldraw/tldraw"
-import "@tldraw/tldraw/tldraw.css"
-import useSocketStore from "@/stores/socketStore"
-
+import { useEffect, useState, useRef } from "react";
+import { useParams } from "next/navigation";
+import { Tldraw, TldrawEditor, useEditor } from "@tldraw/tldraw";
+import "@tldraw/tldraw/tldraw.css";
+import useSocketStore from "@/stores/socketStore";
+import * as Y from "yjs";
 export default function WhiteboardPage() {
-  const params = useParams()
-  const classroomId = params.Id as string
-  const [elements, setElements] = useState<any[]>([])
-  const isRemoteUpdate = useRef(false)
-  const { user } = useUserStore()
-  const { socket, connect, disconnect } = useSocketStore()
+  const params = useParams();
+  const classroomId = params.Id as string;
+  const isRemoteUpdate = useRef(false);
+  const { socket } = useSocketStore();
 
-  const loadInitialData = useCallback(async () => {
-    try {
-      const response = await axiosInstance.get(`/whiteboard/${classroomId}`)
-      if (!response.data.elements) {
-        await axiosInstance.post(`/whiteboard/initialize/${classroomId}`)
-        setElements([])
+  // Yjs Document & State
+  const [yDoc] = useState(() => new Y.Doc());
+  const [yArray] = useState(() => yDoc.getArray("whiteboard"));
+
+  useEffect(() => {
+    if (!socket || !classroomId) return;
+
+    socket.emit("joinClassroom", classroomId);
+
+    const handleLoadWhiteboard = (initialElements: any[] | null | undefined) => {
+      console.log("📥 Attempting to load whiteboard data from backend:", initialElements);
+    
+      isRemoteUpdate.current = true;
+    
+      if (!initialElements || initialElements.length === 0) {
+        console.log("⚠️ No initial data found. Starting with an empty whiteboard.");
+        yArray.delete(0, yArray.length);
       } else {
-        setElements(response.data.elements)
+        yArray.delete(0, yArray.length);
+        yArray.push(initialElements);
       }
-    } catch (error) {
-      console.log("Error loading whiteboard:", error)
-    }
-  }, [classroomId])
+    
+      isRemoteUpdate.current = false;
+      console.log("✅ Yjs State after Load:", yArray.toArray());
+    };
+    
+    
 
-  useEffect(() => {
-    if (!classroomId) return
+    // Listen for real-time whiteboard updates
+    const handleWhiteboardUpdate = (updatedElements: any[]) => {
+      console.log("🔄 Received live update:", updatedElements);
+      isRemoteUpdate.current = true;
+      yArray.delete(0, yArray.length);
+      yArray.push(updatedElements);
+      isRemoteUpdate.current = false;
+      console.log("✅ Yjs State after Live Update:", yArray.toArray());
 
-    connect()
-    loadInitialData()
+    };
 
-    return () => {
-      disconnect()
-    }
-  }, [classroomId, connect, disconnect, loadInitialData])
-
-  useEffect(() => {
-    if (!socket) return
-
-    socket.emit("joinClassroom", classroomId)
-
-    const handleWhiteboardUpdate = (newElements: any[]) => {
-      isRemoteUpdate.current = true
-      setElements(newElements)
-      setTimeout(() => (isRemoteUpdate.current = false), 0)
-    }
-
-    socket.on("whiteboard-update", handleWhiteboardUpdate)
+    socket.on("loadWhiteboard", handleLoadWhiteboard);
+    socket.on("whiteboard-update", handleWhiteboardUpdate);
 
     return () => {
-      socket.off("whiteboard-update", handleWhiteboardUpdate)
-    }
-  }, [socket, classroomId])
-
-  const saveWhiteboard = useCallback(async (elements: any[], classroomId: string) => {
-    try {
-      await axiosInstance.put(`/whiteboard/${classroomId}`, { elements })
-      alert("Whiteboard saved successfully!")
-    } catch (error) {
-      console.log("Error saving whiteboard:", error)
-      alert("Failed to save whiteboard.")
-    }
-  }, [])
+      socket.off("loadWhiteboard", handleLoadWhiteboard);
+      socket.off("whiteboard-update", handleWhiteboardUpdate);
+    };
+  }, [socket, classroomId, yArray]);
 
   return (
     <div className="h-full w-full relative">
-      <button
-        onClick={() => saveWhiteboard(elements, classroomId)}
-        className="absolute top-4 right-4 z-10 bg-blue-500 text-white px-4 py-2 rounded"
-      >
-        Save
-      </button>
       <div style={{ height: "60vh", width: "60vw" }}>
         <TldrawEditor>
           <Tldraw />
-          <EditorListener
-            setElements={setElements}
-            classroomId={classroomId}
-            user={user}
-            isRemoteUpdate={isRemoteUpdate}
-            socket={socket}
-          />
+          <EditorListener yArray={yArray} classroomId={classroomId} socket={socket} isRemoteUpdate={isRemoteUpdate} />
         </TldrawEditor>
       </div>
     </div>
-  )
+  );
 }
 
-function EditorListener({ setElements, classroomId, user, isRemoteUpdate, socket }: any) {
-  const editor = useEditor()
+function EditorListener({ yArray, classroomId, socket, isRemoteUpdate }: any) {
+  const editor = useEditor();
 
   useEffect(() => {
-    if (!editor || !socket) return
+    if (!editor || !socket) return;
+
+    // Sync the editor with Yjs state
+    const updateFromYjs = () => {
+      if (!isRemoteUpdate.current) {
+        const newElements = yArray.toArray();
+        console.log("📌 Syncing Yjs data to editor:", newElements); 
+        const existingShapeIds = Array.from(editor.getCurrentPageShapeIds());
+        console.log("🔍 Existing Shape IDs:", existingShapeIds);
+        // Clear existing shapes
+        if (existingShapeIds.length > 0) {
+          editor.deleteShapes(existingShapeIds);
+        }
+
+        // Create new shapes from Yjs data
+        if (newElements.length > 0) {
+          editor.createShapes(newElements);
+        }
+      }
+    };
+
+    yArray.observe(updateFromYjs);
 
     const handleChange = () => {
-      const updatedElements = Object.values(editor.getCurrentPageShapes())
-      setElements(updatedElements)
-
-      if (!isRemoteUpdate.current && user) {
+      if (!isRemoteUpdate.current) {
+        const updatedElements = Object.values(editor.getCurrentPageShapes());
+    
+        console.log("📝 Local change detected (first-time use possible):", updatedElements);
+    
+        if (updatedElements.length === 0) {
+          console.log("⚠️ No shapes created yet. Waiting for user input...");
+          return; // Do nothing if no shapes exist
+        }
+    
+        // 🔹 Send update to backend
         socket.emit("whiteboard-update", {
           roomId: classroomId,
           elements: updatedElements,
-        })
-
-        axiosInstance
-          .put(`/whiteboard/edit/${classroomId}`, { elements: updatedElements })
-          .catch((error) => console.error("Error updating whiteboard:", error))
+        });
+    
+        // 🔹 Store in Yjs (triggers sync for all users)
+        isRemoteUpdate.current = true;
+        yArray.delete(0, yArray.length);
+        yArray.push(updatedElements);
+        isRemoteUpdate.current = false;
+    
+        console.log("✅ Yjs State after Local Change:", yArray.toArray());
+    
+        // 🔹 If this is the first time, ask the server to SAVE this data
+        socket.emit("saveWhiteboard", {
+          roomId: classroomId,
+          elements: updatedElements,
+        });
+    
+        console.log("💾 Requesting server to store initial whiteboard state...");
       }
-    }
+    };
+    
+    ;
 
-    const unsubscribe = editor.store.listen(handleChange)
-    return () => unsubscribe()
-  }, [editor, socket, user, classroomId, setElements, isRemoteUpdate])
+    const unsubscribe = editor.store.listen(handleChange);
+    return () => {
+      yArray.unobserve(updateFromYjs);
+      unsubscribe();
+    };
+  }, [editor, socket, yArray, classroomId, isRemoteUpdate]);
 
-  return null
+  return null;
 }
-

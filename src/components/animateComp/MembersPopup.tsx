@@ -3,6 +3,8 @@ import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { X } from "lucide-react";
 import axiosInstance from "@/app/utils/axiosInstance";
+import { fetchClassroomMembers } from "@/app/service/classroomService";
+
 
 interface User {
   _id: string;
@@ -31,9 +33,10 @@ const MembersPopup: React.FC<MembersPopupProps> = ({ onClose, roomId }) => {
     const fetchMembers = async () => {
       try {
         setLoading(true);
-        const response = await axiosInstance.get(
-          `${process.env.NEXT_PUBLIC_URL}/classroom/${roomId}/members`
-        );
+        // const response = await axiosInstance.get(
+        //   `${process.env.NEXT_PUBLIC_URL}/classroom/${roomId}/members`
+        // );
+        const response= await fetchClassroomMembers(roomId);
         console.log(response, "members");
         if (!response) {
           throw new Error("Failed to fetch members");

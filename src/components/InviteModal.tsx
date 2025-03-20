@@ -5,6 +5,8 @@ import { Input } from "@/components/ui/input"
 import axiosInstance from "@/app/utils/axiosInstance"
 import { Toaster, toast } from 'sonner';
 import Lottie from "lottie-react";
+import { sendClassroomInvite } from "@/app/service/classroomService";
+
 
 
 interface InviteModalProps {
@@ -20,14 +22,14 @@ const InviteModal: React.FC<InviteModalProps> = ({ inviteCode,classroomId, isOpe
     const [loading, setLoading] = useState(false);
   
 
-  useEffect(() => {
-    if (isOpen) {
-      setIsVisible(true)
-    } else {
-      const timer = setTimeout(() => setIsVisible(false), 300)
-      return () => clearTimeout(timer)
-    }
-  }, [isOpen])
+    useEffect(() => {
+      if (isOpen) {
+        setIsVisible(true); 
+      } else {
+        const timer = setTimeout(() => setIsVisible(false), 300); 
+        return () => clearTimeout(timer);
+      }
+    }, [isOpen]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -41,9 +43,7 @@ const InviteModal: React.FC<InviteModalProps> = ({ inviteCode,classroomId, isOpe
     try {
       setLoading(true);
 
-      const response = await axiosInstance.post(`${process.env.NEXT_PUBLIC_URL}/classroom/${classroomId}/invite`, {
-        email,
-      });
+      const response =  await sendClassroomInvite(classroomId, email);
 
       toast.success(response.data.message || 'Invitation sent successfully!');
       setEmail("");

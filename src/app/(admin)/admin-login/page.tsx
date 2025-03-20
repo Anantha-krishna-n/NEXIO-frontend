@@ -7,6 +7,8 @@ import { Toaster, toast } from 'sonner';
 import { useRouter } from "next/navigation";
 import { useAdminStore } from "@/stores/adminStore";
 import axiosInstance  from "@/app/utils/axiosInstance";
+import { adminLogin } from "@/app/service/adminService";
+
 
 export default function AdminLogin() {
   const [email, setEmail] = useState("");
@@ -17,26 +19,18 @@ export default function AdminLogin() {
     e.preventDefault();
 
     try {
-      const response = await axiosInstance.post(`/admin/login`, { 
-        email, 
-        password 
-      });
-      if (response.data) {
-        console.log(response.data,"admin dat")
-        localStorage.setItem("adminToken", response.data.token);
+      const data = await adminLogin(email, password);
+      if (data) {
+        console.log(data, "admin data");
+        localStorage.setItem("adminToken", data.token);
         setAuthenticated(true);
-        toast.success("login sucessfully")
-        setTimeout(()=>{
+        toast.success("Login successful");
+        setTimeout(() => {
           router.push("/adminDashboard");
-
-        },1000)
+        }, 1000);
       }
     } catch (error: any) {
-      if (error.response?.status === 401) {
-        toast.error("Invalid email or password!");
-      } else {
-        toast.error("Something went wrong. Please try again.");
-      }
+      toast.error(error.message);
     }
   };
 

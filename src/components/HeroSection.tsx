@@ -7,6 +7,8 @@ import { useUserStore } from "@/stores/authStore";
 import { useRouter } from "next/navigation";
 import axiosInstance from "@/app/utils/axiosInstance";
 import { SubscriptionModal } from "./SubscriptionModal";
+import { createClassroom } from "@/app/service/classroomService";
+
 
 interface Classroom {
   _id: string;
@@ -57,7 +59,6 @@ const HeroSection: React.FC = () => {
       return;
     }
 
-    // Front-end validation
     const { title, description, date, time } = formData;
     const selectedDateTime = new Date(`${date}T${time}`);
     const currentDate = new Date();
@@ -84,14 +85,15 @@ const HeroSection: React.FC = () => {
         return;
       }
 
-      const response = await axiosInstance.post(
-        "/classroom/createroom",
-        formData,
-        {
-          withCredentials: true,
-        }
-      );
-
+      // const response = await axiosInstance.post(
+      //   "/classroom/createroom",
+      //   formData,
+      //   {
+      //     withCredentials: true,
+      //   }
+      // );
+      const response = await createClassroom(formData);
+   console.log(response,"response of classroom")
       if (response.data.status === false) {
         setIsSubscriptionModalOpen(true);
         toast.error(response.data.errorMsg || "Could not create classroom");

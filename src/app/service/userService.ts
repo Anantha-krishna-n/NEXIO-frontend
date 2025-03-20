@@ -49,7 +49,9 @@ export const loginUser = async (email: string, password: string) => {
       throw new Error("Network error! Please try again later.");
     }
   }
-};
+}
+
+
 
 export const resetPassword = async ({ email, otp, newPassword, confirmPassword }: ResetPasswordParams) => {
   try {
@@ -63,6 +65,23 @@ export const resetPassword = async ({ email, otp, newPassword, confirmPassword }
     throw error.response?.data?.error || "An unexpected error occurred. Please try again."
   }
 }
+
+
+export const sendPasswordResetOtp = async (email: string) => {
+
+
+  try {
+    await axiosHelper({
+      method: "POST",
+      url: "/auth/forgot-password",
+      data: { email },
+    });
+    return true;
+  } catch (error) {
+  console.log("error in sendreset password",error)
+    throw error;
+  }
+};
 
 export const verifyOtp = async (email: string, otp: string) => {
   try {
