@@ -4,10 +4,9 @@ import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAdminStore } from "@/stores/adminStore";
 
-
-const withAdminAuth = (WrappedComponent: React.FC) => {
-  
-  const AuthenticatedComponent: React.FC = (props) => {
+// Generic type P to handle props of the WrappedComponent
+const withAdminAuth = <P extends object>(WrappedComponent: React.FC<P>) => {
+  const AuthenticatedComponent: React.FC<P> = (props) => {
     const router = useRouter();
     const [loading, setLoading] = useState(true);
 
@@ -16,13 +15,13 @@ const withAdminAuth = (WrappedComponent: React.FC) => {
     useEffect(() => {
       const adminToken = localStorage.getItem("adminToken");
       if (!adminToken || !isAuthenticated) {
-          router.push("/admin-login");
+        router.push("/admin-login");
       } else {
-          setLoading(false);
+        setLoading(false);
       }
-  }, [isAuthenticated, router]);
+    }, [isAuthenticated, router]);
 
-  if (loading) return null; 
+    if (loading) return null;
 
     return <WrappedComponent {...props} />;
   };
